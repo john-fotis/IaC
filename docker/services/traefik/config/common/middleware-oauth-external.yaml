@@ -1,0 +1,8 @@
+http:
+  middlewares:
+    oauth-external:
+      forwardAuth:
+        address: 'https://oauth.{{env "DOMAIN"}}/oauth2/callback'
+        trustForwardHeader: true
+        authResponseHeaders:
+          - "X-Forwarded-User"

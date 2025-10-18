@@ -1,0 +1,31 @@
+http:
+  routers:
+    pihole:
+      rule: "Host(`pihole.{{env "DOMAIN"}}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - chain-pihole
+      service: pihole
+      tls:
+        certResolver: cloudflare
+  services:
+    pihole:
+      loadBalancer:
+        passHostHeader: true
+        serversTransport: pihole-transport
+        servers:
+          - url: https://pythia.{{env "DNS_ZONE"}}
+  serversTransports:
+    pihole-transport:
+      insecureSkipVerify: true
+  middlewares:
+    pihole-host-headers:
+      headers:
+        customRequestHeaders:
+          Host: pythia.{{env "DNS_ZONE"}}
+    chain-pihole:
+      chain:
+        middlewares:
+          - pihole-host-headers
+          - secure-headers

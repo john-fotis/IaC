@@ -1,0 +1,22 @@
+---
+services:
+  ddclient:
+    image: lscr.io/linuxserver/ddclient:latest
+    container_name: ddclient
+    user: "${PUID:-1000}:${PGID:-1000}"
+    # profiles: ["misc", "all"]
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ}
+      - FQDN=${FQDN}
+      - CF_DNS_API_TOKEN_FILE=${CLOUDFLARE_API_TOKEN_FILE}
+    volumes:
+      - ./templates:/templates:ro
+      - ./config:/config:rw
+      - ./cache:/var/cache/ddclient:rw
+    secrets:
+      - cf_dns_api_token
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "/config/entrypoint.sh"]
+    restart: always

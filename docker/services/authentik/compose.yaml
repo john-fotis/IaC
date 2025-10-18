@@ -1,0 +1,185 @@
+---
+services:
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2025.8.4
+    container_name: authentik-server
+    security_opt:
+      - no-new-privileges:true
+    # profiles: ["core", "all"]
+    user: ${PUID}:${PGID}
+    command: server
+    environment:
+      - AUTHENTIK_POSTGRESQL__HOST
+      - AUTHENTIK_POSTGRESQL__NAME
+      - AUTHENTIK_POSTGRESQL__USER
+      - AUTHENTIK_POSTGRESQL__PASSWORD
+      - AUTHENTIK_REDIS__HOST
+      - AUTHENTIK_SECRET_KEY
+      # (Optional) Enable Analytics, Error Reporting, and Automatic Update Checks
+      - AUTHENTIK_DISABLE_STARTUP_ANALYTICS
+      - AUTHENTIK_ERROR_REPORTING__ENABLED
+      - AUTHENTIK_DISABLE_UPDATE_CHECK
+      - AUTHENTIK_LOG_LEVEL
+      - AUTHENTIK_COOKIE_DOMAIN
+      # (Optional, but highly recommended) Enable Email Sending
+      - AUTHENTIK_EMAIL__HOST
+      - AUTHENTIK_EMAIL__PORT
+      - AUTHENTIK_EMAIL__USERNAME
+      - AUTHENTIK_EMAIL__PASSWORD
+      - AUTHENTIK_EMAIL__USE_TLS
+      - AUTHENTIK_EMAIL__USE_SSL
+      - AUTHENTIK_EMAIL__TIMEOUT
+      - AUTHENTIK_EMAIL__FROM
+    volumes:
+      - media:/media
+      - templates:/templates
+    networks:
+      - traefik
+      - socket_proxy
+      - authentik-db
+    secrets:
+      - authentik_email_host
+      - authentik_email_username
+      - authentik_email_password
+      - authentik_postgresql_db
+      - authentik_postgresql_user
+      - authentik_postgresql_pass
+      - authentik_secret_key
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP Routers
+      - traefik.http.routers.authentik.entrypoints=websecure
+      - traefik.http.routers.authentik.rule=Host(`authentik.${FQDN}`)
+      - traefik.http.routers.authentik.tls=true
+      - traefik.http.routers.authentik.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.authentik.service=authentik
+      # Catch any subdomain using individual application forward authentication
+      - traefik.http.routers.authentik-output.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.${FQDN}`) && PathPrefix(`/outpost.goauthentik.io/`)
+      # HTTP Services
+      - traefik.http.services.authentik.loadbalancer.server.port=9000
+      # Middlewares
+      - traefik.http.routers.authentik.middlewares=authentik
+      - traefik.http.middlewares.authentik.headers.customrequestheaders.X-Forwarded-Proto=https
+      - traefik.http.middlewares.authentik.headers.customrequestheaders.X-Forwarded-Port=443
+      - traefik.http.middlewares.authentik.headers.sslRedirect=true
+      - traefik.http.middlewares.authentik.headers.browserXssFilter=true
+      - traefik.http.middlewares.authentik.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.authentik.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.authentik.headers.stsPreload=true
+      - traefik.http.middlewares.authentik.headers.forceSTSHeader=true
+      - traefik.http.middlewares.authentik.headers.stsSeconds=63072000
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2025.8.4
+    container_name: authentik-worker
+    command: worker
+    # profiles: ["core", "all"]
+    environment:
+      - DOCKER_HOST
+      - AUTHENTIK_REDIS__HOST
+      - AUTHENTIK_POSTGRESQL__HOST
+      - AUTHENTIK_POSTGRESQL__NAME
+      - AUTHENTIK_POSTGRESQL__USER
+      - AUTHENTIK_POSTGRESQL__PASSWORD
+      # (Required) To generate a secret key run the following command:
+      #            echo $(openssl rand -base64 32)
+      - AUTHENTIK_SECRET_KEY
+      # (Optional) Enable Error Reporting
+      - AUTHENTIK_ERROR_REPORTING__ENABLED
+      # (Optional, but highly recommended) Enable Email Sending
+      - AUTHENTIK_EMAIL__HOST
+      - AUTHENTIK_EMAIL__PORT
+      - AUTHENTIK_EMAIL__USERNAME
+      - AUTHENTIK_EMAIL__PASSWORD
+      - AUTHENTIK_EMAIL__USE_TLS
+      - AUTHENTIK_EMAIL__USE_SSL
+      - AUTHENTIK_EMAIL__TIMEOUT
+      - AUTHENTIK_EMAIL__FROM
+    volumes:
+      - certs:/certs
+      - media:/media
+      - templates:/templates
+    networks:
+      - socket_proxy
+      - authentik-db
+    secrets:
+      - authentik_email_host
+      - authentik_email_username
+      - authentik_email_password
+      - authentik_postgresql_db
+      - authentik_postgresql_user
+      - authentik_postgresql_pass
+      - authentik_secret_key
+    depends_on:
+      - authentik-db
+      - authentik-redis
+    restart: unless-stopped
+
+  authentik-db:
+    image: postgres:17-alpine
+    container_name: authentik-db
+    # profiles: ["core", "dbs", "all"]
+    shm_size: 128mb
+    environment:
+      - POSTGRES_DB_FILE=${AUTHENTIK_POSTGRESQL_DB_FILE:-authentik}
+      - POSTGRES_USER_FILE=${AUTHENTIK_POSTGRESQL_USER_FILE:-authentik}
+      - POSTGRES_PASSWORD_FILE=${AUTHENTIK_POSTGRESQL_PASS_FILE:-error}
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    ports:
+      - "${AUTHENTIK_POSTGRESQL__PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - authentik-db
+    secrets:
+      - authentik_postgresql_db
+      - authentik_postgresql_user
+      - authentik_postgresql_pass
+    restart: unless-stopped
+
+  authentik-redis:
+    image: redis:alpine
+    container_name: authentik-redis
+    command: --save 60 1 --loglevel warning
+    # profiles: ["core", "dbs", "all"]
+    ports:
+      - "${AUTHENTIK_REDIS__PORT}:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - redis_data:/data
+    networks:
+      - authentik-db
+    restart: unless-stopped
+
+volumes:
+  media:
+    driver: local
+  certs:
+    driver: local
+  templates:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  authentik-db:
+    driver: bridge

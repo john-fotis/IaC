@@ -1,0 +1,31 @@
+http:
+  routers:
+    truenas:
+      rule: "Host(`truenas.{{env "DOMAIN"}}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - chain-truenas
+      service: truenas
+      tls:
+        certResolver: cloudflare
+  services:
+    truenas:
+      loadBalancer:
+        passHostHeader: true
+        serversTransport: truenas-transport
+        servers:
+          - url: https://clio.{{env "DNS_ZONE"}}
+  serversTransports:
+    truenas-transport:
+      insecureSkipVerify: true
+  middlewares:
+    truenas-host-headers:
+      headers:
+        customRequestHeaders:
+          Host: clio.{{env "DNS_ZONE"}}
+    chain-truenas:
+      chain:
+        middlewares:
+          - truenas-host-headers
+          - secure-headers

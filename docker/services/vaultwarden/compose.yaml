@@ -1,0 +1,78 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.34.3
+    container_name: vaultwarden
+    # profiles: ["core", "all"]
+    environment:
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+    networks:
+      - traefik
+      - vw-backup
+    volumes:
+      - vw-data:/data/
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.vaultwarden.entrypoints=websecure
+      - traefik.http.routers.vaultwarden.rule=Host(`vaultwarden.${FQDN}`)
+      - traefik.http.routers.vaultwarden.tls=true
+      - traefik.http.routers.vaultwarden.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.vaultwarden.service=vaultwarden
+      - traefik.http.services.vaultwarden.loadbalancer.server.port=80
+      - traefik.http.routers.vaultwarden.middlewares=chain-no-auth@file
+
+  vw-backup:
+    image: ttionya/vaultwarden-backup:1.25.1
+    container_name: vw-backup
+    # profiles: ["core", "all"]
+    environment:
+      # - DATA_DIR="/data"
+      - RCLONE_REMOTE_NAME=${VW_RCLONE_REMOTE_NAME}
+      - RCLONE_REMOTE_DIR=${VW_RCLONE_REMOTE_DIR}
+      - RCLONE_GLOBAL_FLAG=${VW_RCLONE_GLOBAL_FLAG}
+      - CRON=${VW_CRON:-'5 * * * *'}
+      - ZIP_ENABLE=${VW_ZIP_ENABLE}
+      - ZIP_TYPE=${VW_ZIP_TYPE:-zip}
+      - ZIP_PASSWORD_FILE=${VW_ZIP_PASSWORD_FILE}
+      - BACKUP_FILE_SUFFIX=${VW_BACKUP_FILE_SUFFIX:-'%Y%m%d'}
+      - BACKUP_KEEP_DAYS=${VW_BACKUP_KEEP_DAYS:-30}
+      - PING_URL=${VW_PING_URL}
+      - PING_URL_CURL_OPTIONS=${VW_PING_URL_CURL_OPTIONS}
+      - PING_URL_WHEN_START=${VW_PING_URL_WHEN_START}
+      - PING_URL_WHEN_START_CURL_OPTIONS=${VW_PING_URL_WHEN_START_CURL_OPTIONS}
+      - PING_URL_WHEN_SUCCESS=${VW_PING_URL_WHEN_SUCCESS}
+      - PING_URL_WHEN_SUCCESS_CURL_OPTIONS=${VW_PING_URL_WHEN_SUCCESS_CURL_OPTIONS}
+      - PING_URL_WHEN_FAILURE=${VW_PING_URL_WHEN_FAILURE}
+      - PING_URL_WHEN_FAILURE_CURL_OPTIONS=${VW_PING_URL_WHEN_FAILURE_CURL_OPTIONS}
+      - MAIL_SMTP_ENABLE=${VW_MAIL_SMTP_ENABLE:-false}
+      - MAIL_SMTP_VARIABLES=${VW_MAIL_SMTP_VARIABLES}
+      - MAIL_TO=${VW_MAIL_TO}
+      - MAIL_WHEN_SUCCESS=${VW_MAIL_WHEN_SUCCESS:-false}
+      - MAIL_WHEN_FAILURE=${VW_MAIL_WHEN_FAILURE:-true}
+      - MAIL_FORCE_THREAD=${VW_MAIL_FORCE_THREAD:-false}
+      - TIMEZONE=${TZ:-UTC}
+      # - DB_TYPE=${VW_DB_TYPE:-postgresql}
+      # - PG_HOST=${VW_PG_HOST:-vw-postgres}
+      # - PG_PORT=${VW_PG_PORT:-5432}
+      # - PG_DB_NAME=${VW_PG_DB_NAME:-vaultwarden}
+      # - PG_USER=${VW_PG_USER:-vwuser}
+      # - PG_PASSWORD=${VW_PG_PASSWORD:-vwpassword}
+    networks:
+      - vw-backup
+    volumes:
+      - vw-data:/bitwarden/data/:ro
+      - ${USERDIR}/.config:/config
+    secrets:
+      - vaultwarden_zip_password
+    depends_on: [vaultwarden]
+    restart: always
+
+networks:
+  vw-backup:
+    driver: bridge
+  vw-db:
+    driver: bridge
+
+volumes:
+  vw-data:
+    driver: local

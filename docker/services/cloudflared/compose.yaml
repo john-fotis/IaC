@@ -1,0 +1,14 @@
+---
+services:
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:2025.10.0
+    user: ${PUID:-1000}:${PGID:-1000}
+    environment:
+      - TUNNEL_TOKEN_FILE=${CF_TUNNEL_TOKEN_FILE}
+    networks:
+      - traefik
+    command: tunnel run
+    secrets:
+      - cloudflared_token
+    restart: unless-stopped

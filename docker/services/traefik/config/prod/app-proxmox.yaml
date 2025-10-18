@@ -1,0 +1,31 @@
+http:
+  routers:
+    proxmox:
+      rule: "Host(`proxmox.{{env "DOMAIN"}}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - chain-proxmox
+      service: proxmox
+      tls:
+        certResolver: cloudflare
+  services:
+    proxmox:
+      loadBalancer:
+        passHostHeader: true
+        serversTransport: pve-transport
+        servers:
+          - url: https://zeus.{{env "DNS_ZONE"}}:8006
+  serversTransports:
+    pve-transport:
+      insecureSkipVerify: true
+  middlewares:
+    proxmox-host-headers:
+      headers:
+        customRequestHeaders:
+          Host: zeus.{{env "DNS_ZONE"}}
+    chain-proxmox:
+      chain:
+        middlewares:
+          - proxmox-host-headers
+          - secure-headers

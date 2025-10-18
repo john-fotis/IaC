@@ -1,0 +1,31 @@
+---
+services:
+  authentik-proxy:
+    image: ghcr.io/goauthentik/proxy:2025.8.4
+    container_name: authentik-proxy
+    security_opt:
+      - no-new-privileges:true
+    # profiles: ["core", "all"]
+    networks:
+      - traefik
+    environment:
+      AUTHENTIK_HOST: ${AUTHENTIK_HOST}
+      AUTHENTIK_TOKEN: ${AUTHENTIK_PROXY_TOKEN:-error}
+      AUTHENTIK_INSECURE: ${AUTHENTIK_INSECURE:-false}
+      AUTHENTIK_PROXY_LOG_LEVEL: ${AUTHENTIK_PROXY_LOG_LEVEL:-info}
+    secrets:
+      - authentik_proxy_token
+    restart: always
+    labels:
+      - traefik.enable=true
+      # Router
+      - traefik.http.routers.authentik-proxy.entrypoints=websecure
+      - traefik.http.routers.authentik-proxy.rule=Host(`auth.${FQDN}`)
+      - traefik.http.routers.authentik-proxy.tls=true
+      - traefik.http.routers.authentik-proxy.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.authentik-proxy.service=authentik-proxy
+      # Service port inside container
+      - traefik.http.services.authentik-proxy.loadbalancer.server.port=9000
+      # Optional headers rewrite
+      - traefik.http.middlewares.authentik-proxy-headers.headers.customRequestHeaders.Host=auth.${FQDN}
+      - traefik.http.routers.authentik-proxy.middlewares=authentik-proxy-headers

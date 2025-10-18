@@ -1,0 +1,102 @@
+---
+# Traefik 3.x (YAML)
+
+################################################################
+# Global configuration - https://doc.traefik.io/traefik/reference/static-configuration/file/
+################################################################
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+################################################################
+# API and Dashboard
+################################################################
+api:
+  dashboard: true
+  insecure: false # Change to false in production
+  debug: true
+
+################################################################
+# Entrypoints - https://doc.traefik.io/traefik/routing/entrypoints/
+################################################################
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: :443
+  smtpsecure:
+    address: :465
+
+################################################################
+# Let's Encrypt (ACME)
+################################################################
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: integraceion@gmail.com
+      storage: /var/traefik/certs/acme.json
+      # caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+
+serversTransport:
+  insecureSkipVerify: false # Set to true on individual middlewares for services that include self-signed certs
+
+################################################################
+# Providers - https://doc.traefik.io/traefik/providers/docker/
+################################################################
+providers:
+  docker:
+    exposedByDefault: false
+    network: traefik
+    endpoint: tcp://socket-proxy:2375
+  file:
+    directory: /etc/traefik
+    watch: true
+
+################################################################
+# Logs - https://doc.traefik.io/traefik/observability/logs/
+################################################################
+log:
+  level: ERROR # Options: DEBUG, PANIC, FATAL, ERROR (Default), WARN, and INFO
+  filePath: /logs/traefik.log
+  # format: json
+  noColor: false # Best for txt logging format which is the default
+  maxSize: 100 # Maximum size of the log file in MB
+  compress: true # Compress the log file when it reaches the maximum size
+
+################################################################
+# Access logs - https://doc.traefik.io/traefik/observability/access-logs/
+################################################################
+accesslog:
+  addInternals: true
+  filePath: /logs/access.log
+  bufferingSize: 100
+  fields:
+    names:
+      StartUTC: drop # Write logs in Container Local Time instead of UTC
+  filters:
+    statusCodes: "200-299,400-499,500-599"
+
+################################################################
+# Prometheus Metrics - https://doc.traefik.io/traefik/observability/metrics/prometheus/
+################################################################
+metrics:
+  prometheus:
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true

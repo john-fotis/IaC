@@ -1,0 +1,18 @@
+---
+services:
+  authentik-ldap:
+    image: ghcr.io/goauthentik/ldap:2025.8.4
+    container_name: authentik-ldap
+    security_opt:
+      - no-new-privileges:true
+    # profiles: ["core", "all"]
+    networks:
+      - traefik
+    environment:
+      AUTHENTIK_HOST: ${AUTHENTIK_HOST}
+      AUTHENTIK_TOKEN: ${AUTHENTIK_LDAP_TOKEN:-error}
+      AUTHENTIK_INSECURE: ${AUTHENTIK_INSECURE:-false}
+      AUTHENTIK_LDAP_LOG_LEVEL: ${AUTHENTIK_LDAP_LOG_LEVEL:-info}
+    secrets:
+      - authentik_ldap_token
+    restart: always

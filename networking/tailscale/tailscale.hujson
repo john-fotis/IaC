@@ -1,0 +1,92 @@
+{
+    "groups": {
+        "group:admin": [
+            "integraceion@gmail.com"
+        ],
+        "group:family": [],
+        "group:guest": []
+    },
+    "tagOwners": {
+        "tag:prod": [
+            "group:admin"
+        ],
+        "tag:dmz": [
+            "group:admin",
+            "group:family"
+        ],
+        "tag:iot": [
+            "group:admin"
+        ],
+        "tag:user": [
+            "group:admin"
+        ],
+        "tag:ipcam": [
+            "group:admin"
+        ],
+        "tag:guest": [
+            "group:admin"
+        ],
+        "tag:test": [
+            "group:admin"
+        ]
+    },
+    "acls": [
+        // Admin can access everything
+        {
+            "action": "accept",
+            "src": [
+                "group:admin"
+            ],
+            "dst": [
+                "*:*"
+            ]
+        },
+        // Family can access DMZ services
+        {
+            "action": "accept",
+            "src": [
+                "group:family"
+            ],
+            "dst": [
+                "tag:dmz:*"
+            ]
+        }
+        // Guests have no access (defined group, no grants for now)
+    ],
+    "ssh": [
+        // Admins can SSH into all devices
+        {
+            "action": "accept",
+            "src": [
+                "group:admin"
+            ],
+            "dst": [
+                "tag:prod",
+                "tag:dmz",
+                "tag:iot",
+                "tag:user",
+                "tag:ipcam",
+                "tag:guest",
+                "tag:test"
+            ],
+            "users": [
+                "root",
+                "autogroup:nonroot"
+            ]
+        },
+        // Family can SSH into DMZ-tagged machines only
+        {
+            "action": "accept",
+            "src": [
+                "group:family"
+            ],
+            "dst": [
+                "tag:dmz"
+            ],
+            "users": [
+                "autogroup:nonroot"
+            ]
+        }
+        // Guests have no SSH access
+    ]
+}

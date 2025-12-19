@@ -1,0 +1,67 @@
+networks:
+  default:
+    driver: bridge
+  traefik:
+    name: traefik
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.90.0/24
+  socket_proxy:
+    name: socket_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.91.0/24
+
+secrets:
+  authentik_proxy_token:
+    file: ./secrets/authentik_proxy_token
+  basic_auth_credentials:
+    file: ./secrets/basic_auth_credentials
+  cf_dns_api_token:
+    file: ./secrets/cf_dns_api_token
+  crowdsec_lapi_key:
+    file: ./secrets/crowdsec_lapi_key
+  cloudflared_token:
+    file: ./secrets/cloudflared_token
+  immich_postgres_db:
+    file: ./secrets/immich_postgres_db
+  immich_postgres_user:
+    file: ./secrets/immich_postgres_user
+  immich_postgres_password:
+    file: ./secrets/immich_postgres_password
+  nextcloud_admin_password:
+    file: ./secrets/nextcloud_admin_password
+  nextcloud_admin_user:
+    file: ./secrets/nextcloud_admin_user
+  nextcloud_postgres_db:
+    file: ./secrets/nextcloud_postgres_db
+  nextcloud_postgres_user:
+    file: ./secrets/nextcloud_postgres_user
+  nextcloud_postgres_password:
+    file: ./secrets/nextcloud_postgres_password
+  oauth_client_id:
+    file: ./secrets/oauth_client_id
+  oauth_client_secret:
+    file: ./secrets/oauth_client_secret
+  oauth_secret:
+    file: ./secrets/oauth_secret
+  oauth_encryption_key:
+    file: ./secrets/oauth_encryption_key
+  traefik_forward_oauth:
+    file: ./secrets/traefik_forward_oauth
+
+include:
+  # CORE
+  - services/authentik-proxy/compose.yaml
+  - services/socket-proxy/compose.yaml
+  - services/traefik/compose.yaml
+  - services/cloudflared/compose.yaml
+  # - services/oauth/compose.yaml
+  # SECURITY & AUTHENTICATION
+  - services/crowdsec/compose.yaml
+  # MEDIA
+  - services/nextcloud/compose.yaml
+  - services/immich/compose.yaml
+  - services/whoami/compose.yaml

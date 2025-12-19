@@ -3,6 +3,6 @@ http:
     chain-no-auth:
       chain:
         middlewares:
-          #- traefik-bouncer # leave this out if you are not using CrowdSec
+          - crowdsec # Comment out if not using CrowdSec
           - rate-limit
           - secure-headers

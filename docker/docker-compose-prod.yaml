@@ -1,0 +1,64 @@
+networks:
+  default:
+    driver: bridge
+  traefik:
+    name: traefik
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.80.0/24
+  socket_proxy:
+    name: socket_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.81.0/24
+
+secrets:
+  authentik_email_host:
+    file: ./secrets/authentik_email_host
+  authentik_email_username:
+    file: ./secrets/authentik_email_username
+  authentik_email_password:
+    file: ./secrets/authentik_email_password
+  authentik_secret_key:
+    file: ./secrets/authentik_secret_key
+  authentik_postgresql_db:
+    file: ./secrets/authentik_postgresql_db
+  authentik_postgresql_user:
+    file: ./secrets/authentik_postgresql_user
+  authentik_postgresql_pass:
+    file: ./secrets/authentik_postgresql_pass
+  basic_auth_credentials:
+    file: ./secrets/basic_auth_credentials
+  cf_dns_api_token:
+    file: ./secrets/cf_dns_api_token
+  crowdsec_lapi_key:
+    file: ./secrets/crowdsec_lapi_key
+  speedtest_tracker_app_key:
+    file: ./secrets/speedtest_tracker_app_key
+  gmail_smtp_username:
+    file: ./secrets/gmail_smtp_username
+  gmail_smtp_password:
+    file: ./secrets/gmail_smtp_password
+  vaultwarden_zip_password:
+    file: ./secrets/vaultwarden_zip_password
+
+include:
+  # CORE
+  - services/socket-proxy/compose.yaml
+  - services/traefik/compose.yaml
+  - services/ddclient/compose.yaml
+  - services/vaultwarden/compose.yaml
+  # SECURITY & AUTHENTICATION
+  - services/authentik/compose.yaml
+  - services/crowdsec/compose.yaml
+  # MAINTENANCE
+  # - services/portainer/compose.yaml
+  # - services/dockge/compose.yaml
+  # MONITORING
+  # - services/grafana/compose.yaml
+  # - services/node-exporter/compose.yaml
+  # MISC
+  - services/speedtest-tracker/compose.yaml
+  - services/whoami/compose.yaml

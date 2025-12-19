@@ -1,0 +1,31 @@
+---
+services:
+  # CrowdSec - Open-source & collaborative security IPS
+  crowdsec:
+    image: crowdsecurity/crowdsec:v1.7.4
+    container_name: crowdsec
+    security_opt:
+      - no-new-privileges:true
+    # profiles: ["core", "security", "all"]
+    environment:
+      GID: ${PGID-1000}
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux fulljackz/proxmox crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules"
+    networks:
+      - traefik
+    volumes:
+      - /var/localtime:/etc/localtime:ro
+      - ./config/acquis.yaml:/etc/crowdsec/acquis.yaml
+      - crowdsec-config:/etc/crowdsec/
+      - crowdsec-data:/var/lib/crowdsec/data
+      - traefik-logs:/var/log/traefik/:ro
+    restart: always
+    depends_on: # Remove if not running traefik in the same stack
+      - traefik
+
+volumes:
+  crowdsec-config:
+    name: crowdsec-config
+    driver: local
+  crowdsec-data:
+    name: crowdsec-data
+    driver: local

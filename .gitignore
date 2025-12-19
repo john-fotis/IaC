@@ -61,6 +61,7 @@ vars.pkrvars.hcl
 secrets/
 .env*
 !.env.sample
+*.log
 
 docker/services/ddclient/config/ddclient.conf
 docker/services/traefik/certs/

@@ -1,0 +1,30 @@
+http:
+  middlewares:
+    crowdsec:
+      plugin:
+        crowdsec-bouncer:
+          enabled: true
+          logLevel: INFO
+          updateIntervalSeconds: 15
+          updateMaxFailure: 0
+          defaultDecisionSeconds: 15
+          httpTimeoutSeconds: 10
+          crowdsecMode: stream
+          # LAPI (Bouncer) settings
+          crowdsecLapiKeyFile: /run/secrets/crowdsec_lapi_key
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiScheme: http
+          # AppSec settings
+          crowdsecAppsecEnabled: true
+          crowdsecAppsecHost: crowdsec:7422
+          crowdsecAppsecFailureBlock: true
+          crowdsecAppsecUnreachableBlock: true
+          forwardedHeadersTrustedIPs:
+            - 192.168.80.0/24
+            - 192.168.90.0/24
+          clientTrustedIPs:
+            - 127.0.0.1/32
+            - 192.168.0.0/16
+            - 172.16.0.0/12
+            - 10.0.0.0/8
+          forwardedHeadersCustomName: CF-Connecting-IP

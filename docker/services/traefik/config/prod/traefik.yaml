@@ -100,3 +100,12 @@ metrics:
     addEntryPointsLabels: true
     addRoutersLabels: true
     addServicesLabels: true
+
+################################################################
+# Experimental Features & Plugins - https://doc.traefik.io/traefik/reference/static-configuration/file/#experimental
+################################################################
+experimental:
+  plugins:
+    crowdsec-bouncer:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.5"

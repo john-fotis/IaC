@@ -1,41 +1,41 @@
 lans:
-  - name: default
-    tag: null
-    description: Default network without VLAN tagging
+	- name: default
+		tag: null
+		description: Default network without VLAN tagging
 
 vlans:
-  - name: PROD
-    tag: 10
-    description: Production VLAN - Trusted services
-  - name: DMZ
-    tag: 20
-    description: DMZ VLAN - Public services
-  - name: IOT
-    tag: 30
-    description: IoT VLAN
-  - name: TEST
-    tag: 40
-    description: Test VLAN
-  - name: IPCAM
-    tag: 50
-    description: IP Camera VLAN
-  - name: USER
-    tag: 60
-    description: User devices
-  - name: GUEST
-    tag: 70
-    description: Guest devices
+	- name: PROD
+		tag: 10
+		description: Production VLAN - Trusted services
+	- name: DMZ
+		tag: 20
+		description: DMZ VLAN - Public services
+	- name: IOT
+		tag: 30
+		description: IoT VLAN
+	- name: TEST
+		tag: 40
+		description: Test VLAN
+	- name: IPCAM
+		tag: 50
+		description: IP Camera VLAN
+	- name: USER
+		tag: 60
+		description: User devices
+	- name: GUEST
+		tag: 70
+		description: Guest devices
 
 docker:
-  - name: Traefik-PROD
-    tag: 80
-    description: Docker Traefik Network for PROD VLAN
-  - name: Socket-Proxy-PROD
-    tag: 81
-    description: Docker Socket Proxy Network for PROD VLAN
-  - name: Traefik-DMZ
-    tag: 90
-    description: Docker Traefik DMZ Network for DMZ VLAN
-  - name: Socket-Proxy-DMZ
-    tag: 91
-    description: Docker Socket Proxy Network for DMZ VLAN
+	- name: Traefik-PROD
+		tag: 80
+		description: Docker Traefik Network for PROD VLAN
+	- name: Socket-Proxy-PROD
+		tag: 81
+		description: Docker Socket Proxy Network for PROD VLAN
+	- name: Traefik-DMZ
+		tag: 90
+		description: Docker Traefik DMZ Network for DMZ VLAN
+	- name: Socket-Proxy-DMZ
+		tag: 91
+		description: Docker Socket Proxy Network for DMZ VLAN

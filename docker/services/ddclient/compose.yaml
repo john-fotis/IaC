@@ -4,11 +4,11 @@ services:
     image: lscr.io/linuxserver/ddclient:latest
     container_name: ddclient
     user: "${PUID:-1000}:${PGID:-1000}"
-    # profiles: ["misc", "all"]
+    # profiles: ["misc", "networking", "all"]
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      - TZ=${TZ}
+      - TZ=${TZ:-UTC}
       - FQDN=${FQDN}
       - CF_DNS_API_TOKEN_FILE=${CLOUDFLARE_API_TOKEN_FILE}
     volumes:

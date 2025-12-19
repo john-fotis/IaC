@@ -1,7 +1,7 @@
 ---
 services:
   nextcloud:
-    image: linuxserver/nextcloud:amd64-31.0.9
+    image: linuxserver/nextcloud:32.0.2
     container_name: nextcloud
     # profiles: ["apps", "all"]
     networks:
@@ -14,7 +14,7 @@ services:
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      - TZ=${TZ}
+      - TZ=${TZ:-UTC}
       - NEXTCLOUD_ADMIN_USER_FILE=/run/secrets/nextcloud_admin_user
       - NEXTCLOUD_ADMIN_PASSWORD_FILE=/run/secrets/nextcloud_admin_password
       - POSTGRES_HOST=nextcloud-db
@@ -90,10 +90,13 @@ networks:
 
 volumes:
   nextcloud-config:
+    name: nextcloud-config
     driver: local
   nextcloud-db:
+    name: nextcloud-db
     driver: local
   nextcloud-data:
+    name: nextcloud-data
     driver: local
     driver_opts:
       type: none

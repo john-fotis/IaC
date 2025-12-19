@@ -2,7 +2,7 @@
 services:
   immich-server:
     container_name: immich
-    image: ghcr.io/immich-app/immich-server:v2.1.0
+    image: ghcr.io/immich-app/immich-server:v2.3.1
     # profiles: ["media", "servers", "all"]
     environment:
       # - IMMICH_LOG_LEVEL=verbose
@@ -37,7 +37,7 @@ services:
 
   immich-machine-learning:
     container_name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:v2.1.0
+    image: ghcr.io/immich-app/immich-machine-learning:v2.3.1
     # profiles: ["media", "servers", "all"]
     security_opt:
       - no-new-privileges:true
@@ -98,7 +98,9 @@ networks:
   db:
 
 volumes:
-  model-cache:
-    driver: local
   immich-db:
+    name: immich-db
+    driver: local
+  model-cache:
+    name: immich-model-cache
     driver: local

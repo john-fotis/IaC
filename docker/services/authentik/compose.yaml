@@ -1,7 +1,7 @@
 ---
 services:
   authentik-server:
-    image: ghcr.io/goauthentik/server:2025.8.4
+    image: ghcr.io/goauthentik/server:2025.10.3
     container_name: authentik-server
     security_opt:
       - no-new-privileges:true
@@ -31,8 +31,9 @@ services:
       - AUTHENTIK_EMAIL__TIMEOUT
       - AUTHENTIK_EMAIL__FROM
     volumes:
-      - media:/media
-      - templates:/templates
+      - authentik-certs:/certs
+      - authentik-media:/media
+      - authentik-templates:/templates
     networks:
       - traefik
       - socket_proxy
@@ -57,7 +58,6 @@ services:
       - traefik.http.routers.authentik.entrypoints=websecure
       - traefik.http.routers.authentik.rule=Host(`authentik.${FQDN}`)
       - traefik.http.routers.authentik.tls=true
-      - traefik.http.routers.authentik.tls.certresolver=${CERT_RESOLVER}
       - traefik.http.routers.authentik.service=authentik
       # Catch any subdomain using individual application forward authentication
       - traefik.http.routers.authentik-output.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.${FQDN}`) && PathPrefix(`/outpost.goauthentik.io/`)
@@ -76,7 +76,7 @@ services:
       - traefik.http.middlewares.authentik.headers.stsSeconds=63072000
 
   authentik-worker:
-    image: ghcr.io/goauthentik/server:2025.8.4
+    image: ghcr.io/goauthentik/server:2025.10.3
     container_name: authentik-worker
     command: worker
     # profiles: ["core", "all"]
@@ -102,9 +102,9 @@ services:
       - AUTHENTIK_EMAIL__TIMEOUT
       - AUTHENTIK_EMAIL__FROM
     volumes:
-      - certs:/certs
-      - media:/media
-      - templates:/templates
+      - authentik-certs:/certs
+      - authentik-media:/media
+      - authentik-templates:/templates
     networks:
       - socket_proxy
       - authentik-db
@@ -140,7 +140,7 @@ services:
     ports:
       - "${AUTHENTIK_POSTGRESQL__PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - authentik-postgres:/var/lib/postgresql/data
     networks:
       - authentik-db
     secrets:
@@ -163,21 +163,26 @@ services:
       retries: 5
       timeout: 3s
     volumes:
-      - redis_data:/data
+      - authentik-redis:/data
     networks:
       - authentik-db
     restart: unless-stopped
 
 volumes:
-  media:
+  authentik-certs:
+    name: authentik-certs
     driver: local
-  certs:
+  authentik-media:
+    name: authentik-media
     driver: local
-  templates:
+  authentik-templates:
+    name: authentik-templates
     driver: local
-  postgres_data:
+  authentik-postgres:
+    name: authentik-postgres
     driver: local
-  redis_data:
+  authentik-redis:
+    name: authentik-redis
     driver: local
 
 networks:

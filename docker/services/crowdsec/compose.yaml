@@ -6,7 +6,7 @@ services:
     container_name: crowdsec
     security_opt:
       - no-new-privileges:true
-    # profiles: ["core", "security", "all"]
+    profiles: ["prod", "dmz"]
     environment:
       GID: ${PGID-1000}
       COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux fulljackz/proxmox crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules"

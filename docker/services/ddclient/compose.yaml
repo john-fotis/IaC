@@ -4,7 +4,7 @@ services:
     image: lscr.io/linuxserver/ddclient:latest
     container_name: ddclient
     user: "${PUID:-1000}:${PGID:-1000}"
-    # profiles: ["misc", "networking", "all"]
+    profiles: ["prod"]
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}

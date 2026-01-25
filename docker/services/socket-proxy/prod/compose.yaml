@@ -7,7 +7,7 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    # profiles: ["core", "all"]
+    profiles: ["prod"]
     networks:
       socket_proxy:
     privileged: true # true for VM. False for unprivileged LXC container.
@@ -26,18 +26,18 @@ services:
       - VERSION=1
       ### Security critical - Revoked by Default
       - AUTH=0
-      - SECRETS=0
-      - POST=1 # Watchtower
+      - SECRETS=0 # Required to read Docker secrets (Komodo, Portainer)
+      - POST=1 # Required to start/stop/create containers (Komodo)
       ### Not always needed
-      - BUILD=0
+      - BUILD=0 # Required if you using "Build" features in Komodo
       - COMMIT=0
       - CONFIGS=0
-      - CONTAINERS=1 # Traefik, portainer, etc.
+      - CONTAINERS=1 # Required to list and manage containers (Traefik, Komodo, Portainer, etc.)
       - DISTRIBUTION=0
-      - EXEC=0
-      - IMAGES=1 # Portainer
+      - EXEC=0 # Required to use the "Terminal" in Komodo UI
+      - IMAGES=1 # Required to pull new versions from Renovate updates (Komodo, Portainer)
       - INFO=1 # Portainer
-      - NETWORKS=1 # Portainer
+      - NETWORKS=1 # Required to attach containers to Traefik/DB networks (Komodo, Portainer)
       - NODES=0
       - PLUGINS=0
       - SERVICES=1 # Portainer
@@ -45,7 +45,7 @@ services:
       - SWARM=0
       - SYSTEM=0
       - TASKS=1 # Portainer
-      - VOLUMES=1 # Portainer
+      - VOLUMES=1 # Required for persistent storage (Komodo, Portainer)
     read_only: true
     tmpfs:
       - /run

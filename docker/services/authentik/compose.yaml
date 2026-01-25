@@ -1,11 +1,11 @@
 ---
 services:
   authentik-server:
-    image: ghcr.io/goauthentik/server:2025.10.3
+    image: ghcr.io/goauthentik/server:2025.12.1
     container_name: authentik-server
     security_opt:
       - no-new-privileges:true
-    # profiles: ["core", "all"]
+    profiles: ["prod"]
     user: ${PUID}:${PGID}
     command: server
     environment:
@@ -76,10 +76,10 @@ services:
       - traefik.http.middlewares.authentik.headers.stsSeconds=63072000
 
   authentik-worker:
-    image: ghcr.io/goauthentik/server:2025.10.3
+    image: ghcr.io/goauthentik/server:2025.12.1
     container_name: authentik-worker
     command: worker
-    # profiles: ["core", "all"]
+    profiles: ["prod"]
     environment:
       - DOCKER_HOST
       - AUTHENTIK_REDIS__HOST
@@ -124,7 +124,7 @@ services:
   authentik-db:
     image: postgres:17-alpine
     container_name: authentik-db
-    # profiles: ["core", "dbs", "all"]
+    profiles: ["prod"]
     shm_size: 128mb
     environment:
       - POSTGRES_DB_FILE=${AUTHENTIK_POSTGRESQL_DB_FILE:-authentik}
@@ -153,7 +153,7 @@ services:
     image: redis:alpine
     container_name: authentik-redis
     command: --save 60 1 --loglevel warning
-    # profiles: ["core", "dbs", "all"]
+    profiles: ["prod"]
     ports:
       - "${AUTHENTIK_REDIS__PORT}:6379"
     healthcheck:

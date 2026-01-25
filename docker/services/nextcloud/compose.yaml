@@ -1,9 +1,9 @@
 ---
 services:
   nextcloud:
-    image: linuxserver/nextcloud:32.0.2
+    image: linuxserver/nextcloud:32.0.5
     container_name: nextcloud
-    # profiles: ["apps", "all"]
+    profiles: ["dmz"]
     networks:
       - traefik
       - db
@@ -39,7 +39,6 @@ services:
       - traefik.http.routers.nextcloud.entrypoints=websecure
       - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${FQDN}`)
       - traefik.http.routers.nextcloud.tls=true
-      - traefik.http.routers.nextcloud.tls.certresolver=${CERT_RESOLVER}
       - traefik.http.routers.nextcloud.service=nextcloud
       # HTTP Services
       - traefik.http.services.nextcloud.loadbalancer.server.port=80
@@ -59,7 +58,7 @@ services:
   nextcloud-db:
     image: postgres:17-alpine
     container_name: nextcloud-db
-    # profiles: ["core", "dbs", "all"]
+    profiles: ["dmz"]
     environment:
       - POSTGRES_DB_FILE=/run/secrets/nextcloud_postgres_db
       - POSTGRES_USER_FILE=/run/secrets/nextcloud_postgres_user

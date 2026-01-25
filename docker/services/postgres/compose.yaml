@@ -2,7 +2,7 @@
 services:
   postgres:
     image: docker.io/library/postgres:17-alpine
-    # profiles: ["dbs", "all"]
+    profiles: ["prod", "dmz"]
     container_name: postgres
     environment:
       - POSTGRES_INITDB_ARGS=${POSTGRES_INITDB_ARGS:--data-checksums}
@@ -31,7 +31,7 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin
     restart: unless-stopped
-    profiles: ["apps", "all"]
+    profiles: ["prod", "dmz"]
     networks:
       - postgresql
       - traefik
@@ -44,7 +44,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${FQDN}`)
       - traefik.http.routers.pgadmin.entrypoints=websecure
-      - traefik.http.routers.pgadmin.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.pgadmin.tls=true
       - traefik.http.services.pgadmin.loadbalancer.server.port=80
       - traefik.http.routers.pgadmin.middlewares=chain-authentik@file
 

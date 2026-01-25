@@ -2,8 +2,8 @@
 services:
   immich-server:
     container_name: immich
-    image: ghcr.io/immich-app/immich-server:v2.3.1
-    # profiles: ["media", "servers", "all"]
+    image: ghcr.io/immich-app/immich-server:v2.4.1
+    profiles: ["dmz"]
     environment:
       # - IMMICH_LOG_LEVEL=verbose
       - DB_HOSTNAME=immich-postgres
@@ -31,14 +31,14 @@ services:
       - traefik.enable=true
       - traefik.http.routers.immich.rule=Host(`immich.${FQDN}`)
       - traefik.http.routers.immich.entrypoints=websecure
-      - traefik.http.routers.immich.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.immich.tls=true
       - traefik.http.services.immich.loadbalancer.server.port=2283
       - traefik.http.routers.immich.middlewares=chain-no-auth@file
 
   immich-machine-learning:
     container_name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:v2.3.1
-    # profiles: ["media", "servers", "all"]
+    image: ghcr.io/immich-app/immich-machine-learning:v2.4.1
+    profiles: ["dmz"]
     security_opt:
       - no-new-privileges:true
     environment:
@@ -56,7 +56,7 @@ services:
     container_name: immich-postgres
     image: ghcr.io/immich-app/postgres:17-vectorchord0.4.3-pgvectors0.3.0
     shm_size: 128mb
-    # profiles: ["media", "dbs", "all"]
+    profiles: ["dmz"]
     environment:
       - POSTGRES_DB_FILE=${IMMICH_POSTGRES_DB_FILE:-/run/secrets/immich_postgres_db}
       - POSTGRES_USER_FILE=${IMMICH_POSTGRES_USER_FILE:-/run/secrets/immich_postgres_user}
@@ -86,7 +86,7 @@ services:
 
   immich-redis:
     container_name: immich-redis
-    # profiles: ["media", "dbs", "all"]
+    profiles: ["dmz"]
     image: redis:alpine
     networks:
       - db

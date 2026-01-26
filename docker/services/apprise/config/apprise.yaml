@@ -1,0 +1,14 @@
+version: 1
+
+# Global servers Apprise can notify
+urls:
+  # Discord example
+  - discord://${DISCORD_ID}/${DISCORD_TOKEN}
+
+  # ntfy example
+  - ntfy://ntfy.${FQDN}/general
+
+# (Optional) Custom notification tag groups
+tagging:
+  alerts:
+    - ntfy://ntfy.${FQDN}/alerts

@@ -15,6 +15,10 @@ networks:
         - subnet: 192.168.81.0/24
 
 secrets:
+  apprise_discord_webhook_id:
+    file: ./secrets/apprise_discord_webhook_id
+  apprise_discord_webhook_token:
+    file: ./secrets/apprise_discord_webhook_token
   authentik_email_host:
     file: ./secrets/authentik_email_host
   authentik_email_username:
@@ -41,6 +45,18 @@ secrets:
     file: ./secrets/gmail_smtp_username
   gmail_smtp_password:
     file: ./secrets/gmail_smtp_password
+  komodo_db_user:
+    file: ./secrets/komodo_db_user
+  komodo_db_pass:
+    file: ./secrets/komodo_db_pass
+  komodo_oidc_client_id:
+    file: ./secrets/komodo_oidc_client_id
+  komodo_oidc_client_secret:
+    file: ./secrets/komodo_oidc_client_secret
+  komodo_passkey:
+    file: ./secrets/komodo_passkey
+  komodo_webhook:
+    file: ./secrets/komodo_webhook
   vaultwarden_zip_password:
     file: ./secrets/vaultwarden_zip_password
 
@@ -53,6 +69,9 @@ include:
   # SECURITY & AUTHENTICATION
   - services/authentik/compose.yaml
   - services/crowdsec/compose.yaml
+  # NOTIFICATIONS
+  - services/apprise/compose.yaml
+  - services/mailrise/compose.yaml
   # MAINTENANCE
   # - services/portainer/compose.yaml
   # - services/dockge/compose.yaml

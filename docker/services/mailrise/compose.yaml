@@ -1,0 +1,27 @@
+services:
+  mailrise:
+    image: yoryan/mailrise:latest
+    profiles: ["prod"]
+    container_name: mailrise
+    environment:
+      - FQDN
+    networks:
+      - traefik
+    volumes:
+      - ./config:/config:rw
+      - ./templates:/templates:ro
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "/config/entrypoint.sh"]
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # Router
+      - traefik.tcp.routers.mailrise.entrypoints=smtpsecure
+      - traefik.tcp.routers.mailrise.rule=HostSNI(`mail.${FQDN}`)
+      - traefik.tcp.routers.mailrise.tls=true
+      - traefik.tcp.routers.mailrise.tls.certresolver=${CERT_RESOLVER}
+      # Service
+      - traefik.tcp.routers.mailrise.service=mailrise
+      - traefik.tcp.services.mailrise.loadbalancer.server.port=8025
+    depends_on:
+      - apprise

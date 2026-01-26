@@ -1,0 +1,35 @@
+---
+services:
+  apprise:
+    image: lscr.io/linuxserver/apprise-api:1.2.6
+    container_name: apprise
+    profiles: ["prod"]
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ:-UTC}
+      - FQDN=${FQDN}
+      - APPRISE_ATTACH_SIZE=0 # Max attachment size in MB (0=disabled)
+      - APPRISE_DISCORD_WEBHOOK_ID_FILE
+      - APPRISE_DISCORD_WEBHOOK_TOKEN_FILE
+    networks:
+      - traefik
+    volumes:
+      - ./config:/config:rw
+      - ./templates:/templates:ro
+      # - /path/to/apprise/attachments:/attachments
+    restart: unless-stopped
+    secrets:
+      - apprise_discord_webhook_id
+      - apprise_discord_webhook_token
+    labels:
+      - traefik.enable=true
+      # HTTP Routers
+      - traefik.http.routers.apprise.entrypoints=websecure
+      - traefik.http.routers.apprise.rule=Host(`apprise.${FQDN}`)
+      - traefik.http.routers.apprise.tls=true
+      # HTTP Services
+      - traefik.http.routers.apprise.service=apprise
+      - traefik.http.services.apprise.loadbalancer.server.port=8000
+      # Middlewares
+      - traefik.http.routers.apprise.middlewares=chain-no-auth@file

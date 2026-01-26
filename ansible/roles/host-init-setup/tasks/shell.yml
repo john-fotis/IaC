@@ -1,0 +1,19 @@
+- name: Configure bashrc
+  block:
+    - name: Install fzf
+      ansible.builtin.apt:
+        name: fzf
+        state: present
+        update_cache: yes
+
+    - name: Set up fzf in .bashrc
+      ansible.builtin.blockinfile:
+        path: "{{ ansible_env.HOME }}/.bashrc"
+        block: |
+          # Set up fzf key bindings and fuzzy completion for bash
+          [ -f /usr/share/doc/fzf/examples/key-bindings.bash ] && source /usr/share/doc/fzf/examples/key-bindings.bash
+          [ -f /usr/share/doc/fzf/examples/completion.bash ] && source /usr/share/doc/fzf/examples/completion.bash
+        create: yes
+        owner: "{{ ansible_env.USER }}"
+        group: "{{ ansible_env.USER }}"
+        mode: '0644'

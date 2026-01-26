@@ -1,0 +1,42 @@
+- name: Check SSH access as sudo_user from localhost
+  hosts: lxcs
+  gather_facts: false
+  vars:
+    ssh_opts: "-i {{ ssh_private_key_file }} -o BatchMode=yes -o ConnectTimeout=3 -q"
+  tasks:
+
+    - name: SSH check from localhost for each host
+      ansible.builtin.command: >
+        ssh {{ ssh_opts }} {{ sudo_user }}@{{ ansible_host }} true
+      register: ssh_check
+      ignore_errors: true
+      changed_when: false
+      delegate_to: localhost
+
+    - name: Set sudo_user_exists fact
+      ansible.builtin.set_fact:
+        sudo_user_exists: "{{ ssh_check.rc == 0 }}"
+
+- name: Bootstrap hosts (create user {{ sudo_user }}, lock down root)
+  hosts: lxcs
+  remote_user: root
+  ignore_unreachable: true
+  tasks:
+
+    - name: Include the role to bootstrap the host if the user doesn't exist
+      include_role:
+        name: host-init-setup
+      when: not sudo_user_exists | default(false)
+      tags: bootstrap
+
+- name: Finish setup as {{ sudo_user }} (install packages, reboot, etc.)
+  hosts: lxcs
+  remote_user: "{{ sudo_user }}"
+  become: true
+  tasks:
+
+    - name: Include the post-install role to finish the setup
+      include_role:
+        name: host-init-setup
+      when: sudo_user_exists | default(false)
+      tags: post-install

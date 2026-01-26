@@ -1,0 +1,7 @@
+---
+# vars file for ubuntu-host-setup
+provision_sudo_user: true
+generate_motd: true
+disable_root_ssh: true
+ssh_allowed_users:
+  - "{{ sudo_user }}"

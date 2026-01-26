@@ -1,0 +1,34 @@
+- name: Create {{ sudo_user }} if not exists
+  ansible.builtin.user:
+    name: "{{ sudo_user }}"
+    groups: sudo
+    append: yes
+    shell: /bin/bash
+    create_home: yes
+  register: sudo_user_exists
+
+- block:
+
+    - name: Configure passwordless sudo for {{ sudo_user }}
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/{{ sudo_user }}"
+        content: "{{ sudo_user }} ALL=(ALL) NOPASSWD:ALL"
+        mode: "0440"
+
+    - name: Ensure SSH key directory exists
+      ansible.posix.authorized_key:
+        user: "{{ sudo_user }}"
+        state: present
+        manage_dir: yes
+        key: "{{ lookup('file', ssh_private_key_file + '.pub') }}"
+
+    - name: Deploy SSH config
+      ansible.builtin.template:
+        src: sshd_config.j2
+        dest: /etc/ssh/sshd_config
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart ssh service
+
+  when: sudo_user_exists.changed

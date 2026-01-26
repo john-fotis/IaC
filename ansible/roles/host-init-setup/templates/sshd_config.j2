@@ -1,0 +1,11 @@
+# Managed by Ansible - DO NOT EDIT
+Port 22
+Protocol 2
+PermitRootLogin {{ 'yes' if disable_root_ssh | bool == false else 'no' }}
+PasswordAuthentication yes
+PubkeyAuthentication yes
+AllowUsers {{ ssh_allowed_users | join(' ') }}
+ChallengeResponseAuthentication no
+UsePAM yes
+Subsystem sftp /usr/lib/openssh/sftp-server
+PrintMotd no

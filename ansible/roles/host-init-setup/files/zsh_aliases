@@ -1,0 +1,155 @@
+# GENERAL
+alias zshrc='code ~/.zshrc'
+alias zshupd='. ~/.zshrc'
+
+# SYSTEMD START, STOP AND RESTART
+alias ctlreload='sudo systemctl daemon-reload'
+alias ctlstart='sudo systemctl start'
+alias ctlstop='sudo systemctl stop'
+alias ctlrestart='sudo systemctl restart'
+alias ctlstatus='sudo systemctl status'
+alias ctlenable='sudo systemctl enable'
+alias ctldisable='sudo systemctl disable'
+alias ctlactive='sudo systemctl is-active'
+
+# INSTALLATION AND UPGRADE
+alias update='sudo apt update'
+alias upgrade='sudo apt update && sudo apt upgrade'
+alias install='sudo apt install'
+alias finstall='sudo apt -f install'
+alias rinstall='sudo apt -f install --reinstall'
+alias uninstall='sudo apt remove'
+alias search='sudo apt-cache search'
+alias addkey='sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com'
+
+# CLEANING
+alias aptclean='sudo apt clean && sudo apt autoclean'
+alias aptremove='sudo apt remove -y && sudo apt autoremove -y'
+alias aptpurge='sudo apt purge'
+
+# NETWORKING
+alias portsused='sudo netstat -tulpn | grep LISTEN'
+alias showports='netstat -lnptu'
+alias showlistening='lsof -i -n | egrep "COMMAND|LISTEN"'
+
+# COMPRESSION
+alias untargz='tar --same-owner -zxvf'
+alias untarbz='tar --same-owner -xjvf'
+alias lstargz='tar -ztvf'
+alias lstarbz='tar -jtvf'
+alias targz='tar -zcvf'
+alias tarbz='tar -cjvf'
+
+# FILE SIZE AND STORAGE
+alias fdisk='sudo fdisk -l'
+alias uuid='sudo vol_id -u'
+alias l='ls -CF'
+alias lt='ls -lrth --group-directories-first'
+alias ls='ls -F --color=auto --group-directories-first'
+alias ll='ls -alh --color=auto --group-directories-first'
+alias lss='ls --human-readable --color=auto --size -1 -S --classify' # file size sorted
+alias lsr='ls --color=auto -t -1'
+alias mnt='mount | grep -E ^/dev | column -t' # show mounted drives
+alias dirsize='sudo du -hx --max-depth=1'
+alias dirusage='du -ch | grep total' # Grabs the disk usage in the current directory
+alias diskusage='df -hl --total | grep total' # Gets the total disk usage on your machine
+alias partusage='df -hlT --exclude-type=tmpfs --exclude-type=devtmpfs' # Shows the individual partition usages without the temporary memory values
+alias usage10='du -hsx * | sort -h | head -10' # Gives you what is using the most space. Both directories and files. Varies on current directory
+
+# SYSTEM MONITORING
+alias meminfo='free -m -l -t'
+alias psmem='ps auxf | sort -nr -k 4'
+alias psmem10='ps auxf | sort -nr -k 4 | head -10'
+alias pscpu='ps auxf | sort -nr -k 3'
+alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
+alias cpuinfo='lscpu'
+alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
+alias free='free -h'
+
+# SHUTDOWN AND RESTART
+alias shutdown='sudo shutdown -h now'
+alias reboot='sudo reboot'
+
+# GIT
+alias gitlog='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative'
+alias gcm='git commit -S -m'
+alias gcl='gitlab-ci-local'
+
+# DOCKER
+alias dstop='docker stop' # usage: dstop container_name
+alias dstopall='docker stop $(docker ps -aq)' # stop all containers
+alias drmall='docker rm' # usage: drm container_name
+alias drmall='docker rm $(docker ps -a -q)' # remove all containers
+alias ddelimages='docker rmi $(docker images -q)' # remove unused docker images
+alias dprunevol='docker volume prune' # remove unused volumes
+alias dexec='docker exec -it' # usage: dexec container_name (to access container terminal)
+alias dps='docker ps'
+alias dpsa='docker ps -a'
+alias dpss='docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Image}}" | (sed -u 1q; sort)' # running docker processes as nicer table
+alias dlogs='docker logs -tf --tail="50" ' # usage: dlogs container_name
+alias dlogsize='du -ch $(docker inspect --format='{{.LogPath}}' $(docker ps -qa)) | sort -h' # see the size of docker containers
+alias dips="docker ps -q | xargs -n 1 docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o $'\t'"
+alias dci='docker images -f 'dangling=true' -q | xargs docker rmi 2> /dev/null || echo "No images found."' # delete all untagged images
+alias dcd='docker volume ls | grep gcl- | xargs docker volume rm 2> /dev/null || echo "No volumes found."' # delete gcl volumes
+alias dsdf='docker system df'
+alias dsprune='docker system prune -a'
+alias dscleanup='ddelimages ; dprunevol ; dsprune' # remove unused data, volumes, and images (perfect for safe clean up)
+
+# DOCKER COMPOSE
+alias dc='docker compose'
+alias docker-compose='docker compose'
+alias dclogs='docker compose logs -tf --tail="50" ' # usage: dclogs container_name
+alias dcup='docker compose up -d --build --remove-orphans' # up the stack
+alias dcdown='docker compose down --remove-orphans' # down the stack
+alias dcrec='docker compose up -d --force-recreate --remove-orphans' # usage: dcrec container_name
+alias dcstop='docker compose stop' # usage: dcstop container_name
+alias dcrestart='docker compose restart ' # usage: dcrestart container_name
+alias dcstart='docker compose start ' # usage: dcstart container_name
+alias dcpull='docker compose pull' # usage: dcpull to pull all new images or dcpull container_name
+
+# KUBERNETES
+alias kctx='kubectx'
+alias kbns='kubens'
+alias kubectlv='kubectl version -o json --client'
+alias k='kubectl'
+alias wkgp='watch kubectl get pods'
+alias kc='kubectl config view --minify | grep name'
+alias kdp='kubectl describe pod'
+alias kdd='kubectl describe deployment'
+alias kds='kubectl describe sts'
+alias kdv='kubectl describe pvc'
+alias kgp='kubectl get pod'
+alias kgpa='kubectl get pods -A'
+alias kgd='kubectl get deployment'
+alias kgs='kubectl get svc'
+alias kgss='kubectl get sts'
+alias kgv='kubectl get pvc'
+alias kgc='kubectl get configmap'
+alias kge='kubectl get events'
+alias kgf='kubectl logs -f'
+alias kgi='kubectl get ingress'
+alias kes='kubectl edit sts'
+alias ked='kubectl edit deployment'
+alias kec='kubectl edit configmap'
+alias kei='kubectl edit ingress'
+alias krh='kubectl run --help | more'
+alias ugh='kubectl get --help | more'
+alias kd='kubectl describe pod'
+alias kex='kubectl explain'
+alias kf='kubectl create -f'
+alias kgl='kubectl get pods --show-labels'
+alias kw='kubectl get pods -o wide'
+alias kr='kubectl replace -f'
+alias kh='kubectl --help | more'
+alias krh='kubectl run --help | more'
+alias kgn='kubectl get namespaces'
+alias kga='kubectl get pod --all-namespaces'
+alias kgaa='kubectl get all --show-labels'
+alias kgfp='kubectl get pods -A | grep -v Completed | grep -v Running'
+
+# PYTHON
+alias python='python3'
+alias penv='pipenv'
+
+# GPG
+alias test-gpg='echo "test" | gpg --clearsign'

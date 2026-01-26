@@ -1,0 +1,87 @@
+---
+- name: Determine VM or LXC status
+  set_fact:
+    is_lxc: "{{ ansible_virtualization_type == 'lxc' }}"
+    is_vm: "{{ ansible_virtualization_type in ['kvm', 'qemu', 'vmware', 'xen', 'hyperv'] }}"
+
+- name: Check if QEMU guest agent should be installed
+  ansible.builtin.apt:
+    name: qemu-guest-agent
+    state: present
+    update_cache: yes
+  when:
+    - is_vm | default(false)
+    - install_qemu_guest_agent | bool
+
+- name: Check if /etc/motd exists
+  ansible.builtin.stat:
+    path: /etc/motd
+  register: motd_file
+
+- block:
+
+  - name: Install figlet and locate and other basic packages
+    ansible.builtin.apt:
+      name:
+        - apache2-utils
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+        - ncdu
+        - net-tools
+        - iperf3
+        - htop
+        - unzip
+        - zip
+        - figlet
+        - locate
+      state: present
+      update_cache: yes
+
+  - name: Generate MOTD via figlet
+    ansible.builtin.command: figlet {{ inventory_hostname }}
+    register: motd_output
+
+  - name: Deploy generated MOTD
+    ansible.builtin.copy:
+      dest: /etc/motd
+      content: "{{ motd_output.stdout }}\n"
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Run updatedb to update file index
+    ansible.builtin.command: updatedb
+
+  - name: Remove figlet and locate
+    ansible.builtin.apt:
+      name:
+        - figlet
+        - locate
+      state: absent
+      autoremove: yes
+
+  when:
+    - generate_motd
+    - not motd_file.stat.exists
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+    autoclean: yes
+    autoremove: yes
+
+- name: Clean up apt cache
+  ansible.builtin.apt:
+    autoclean: yes
+    autoremove: yes
+
+- meta: flush_handlers
+
+- name: Reboot the container
+  ansible.builtin.command: reboot
+  async: 1
+  poll: 0

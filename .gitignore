@@ -58,7 +58,9 @@ vars.pkrvars.hcl
 # For built boxes
 *.box
 
+# Custom
 *.log
+*acme.json
 .sops/config.txt
 
 ######## Auto-ignored SOPS Secrets ########

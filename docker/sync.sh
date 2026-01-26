@@ -71,7 +71,7 @@ sync_and_deploy() {
     local label="$1" src="$2" tmp_dest="$3" move_cmd="$4"
     [[ -d "$src" && -z "$(ls -A "$src")" ]] && { echo -e "${RED}Skipping $label: empty dir.${NC}"; return; }
     echo -e "${GREEN}Uploading $label to $HOST:$tmp_dest${NC}"
-    rsync "${TEMP_RSYNC_OPTS[@]}" "${RSYNC_EXCLUDE_PARAMS[@]}" $( [[ -d "$src" ]] && echo "$src/" || echo "$src" ) "$HOST:$tmp_dest"
+    rsync "${TEMP_RSYNC_OPTS[@]}" $( [[ -d "$src" ]] && echo "$src/" || echo "$src" ) "$HOST:$tmp_dest"
     $DRY_RUN && echo -e "${GREEN}(Dry run) Skipping move for $label${NC}" || ssh "$HOST" "$move_cmd"
 }
 
@@ -102,8 +102,7 @@ for HOST in ${HOSTS[$GROUP]}; do
         if profile_matches_group "$svc"; then
             echo -e "${GREEN}[OK] Service: $dir${NC}"
             $DRY_RUN || ssh -n "$HOST" "mkdir -p $DEST_DIR/services/$dir"
-            rsync "${RSYNC_OPTS[@]}" "${RSYNC_EXCLUDE_PARAMS[@]}" \
-                "$(dirname "$svc")/" "$HOST:$DEST_DIR/services/$dir/"
+            rsync "${RSYNC_OPTS[@]}" "${RSYNC_EXCLUDE_PARAMS[@]}" "$SCRIPT_DIR/" "$HOST:$DEST_DIR/"
         elif ! grep -qi "profiles:" "$svc"; then
             echo -e "${RED}[KO] Service: $dir (No profile key)${NC}"
         fi

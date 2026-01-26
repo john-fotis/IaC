@@ -1,0 +1,41 @@
+version: "3"
+
+tasks:
+  default:
+    silent: true
+    cmd: task -l
+
+  pre-commit:
+    desc: Run pre-commit tasks
+    silent: true
+    cmds:
+      - task encrypt
+      - task gitignore-update
+
+  prepare-sops:
+    desc: Locate all sensitive files and generate config.txt
+    run: once
+    silent: true
+    cmd: bash {{.ROOT_DIR}}/.sops/locate-secrets.sh
+
+  encrypt:
+    desc: Encrypt all sops files in this repository.
+    run: once
+    deps: [prepare-sops]
+    cmd: bash {{.ROOT_DIR}}/.sops/encrypt.sh
+
+  decrypt:
+    desc: Decrypt all sops files in this repository.
+    run: once
+    cmd: bash {{.ROOT_DIR}}/.sops/decrypt.sh
+
+  gitignore-update:
+    desc: Add decrypted files to .gitignore to avoid accidental commits
+    silent: true
+    run: once
+    cmd: bash {{.ROOT_DIR}}/.sops/gitignore-update.sh
+
+  gitignore-clean:
+    desc: Remove the auto-ignored SOPS secrets section from .gitignore
+    silent: true
+    cmd: bash {{.ROOT_DIR}}/.sops/gitignore-clean.sh

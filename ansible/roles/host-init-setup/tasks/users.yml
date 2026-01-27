@@ -15,7 +15,7 @@
         content: "{{ sudo_user }} ALL=(ALL) NOPASSWD:ALL"
         mode: "0440"
 
-    - name: Ensure SSH key directory exists
+    - name: Ensure SSH key directory exists for {{ sudo_user }}
       ansible.posix.authorized_key:
         user: "{{ sudo_user }}"
         state: present
@@ -32,3 +32,16 @@
       notify: Restart ssh service
 
   when: sudo_user_exists.changed
+
+- name: Create ansible if not exists
+  ansible.builtin.user:
+    name: "ansible"
+    shell: /bin/bash
+    create_home: yes
+
+- name: Ensure SSH key directory exists for ansible
+  ansible.posix.authorized_key:
+    user: ansible
+    state: present
+    manage_dir: yes
+    key: "{{ lookup('file', ansible_ssh_private_key_file + '.pub') }}"

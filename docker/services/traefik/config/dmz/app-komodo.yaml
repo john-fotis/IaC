@@ -1,0 +1,14 @@
+tcp:
+  routers:
+    komodo-periphery:
+      entryPoints:
+        - komodo-tcp
+      rule: "HostSNI(`phobos.integraceion.com`)"
+      service: komodo-periphery
+      tls:
+        passthrough: true
+  services:
+    komodo-periphery:
+      loadBalancer:
+        servers:
+          - address: komodo-periphery:8120

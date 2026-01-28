@@ -1,0 +1,102 @@
+name: komodo
+services:
+  mongo:
+    image: mongo:8
+    container_name: komodo-mongo
+    profiles: ["prod"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME_FILE: ${KOMODO_DB_USERNAME_FILE:-/run/secrets/komodo_db_user}
+      MONGO_INITDB_ROOT_PASSWORD_FILE: ${KOMODO_DB_PASSWORD_FILE:-/run/secrets/komodo_db_pass}
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    restart: unless-stopped
+    command: --quiet --wiredTigerCacheSizeGB 0.25
+    secrets:
+      - komodo_db_user
+      - komodo_db_pass
+    networks:
+      - komodo_backend
+    labels:
+      komodo.skip: "true"
+
+  core:
+    image: ghcr.io/moghtech/komodo-core:1.19.5
+    container_name: komodo-core
+    profiles: ["prod"]
+    depends_on:
+      - mongo
+    # ports:
+    #   - 9120:9120
+    environment:
+      - KOMODO_HOST=${KOMODO_HOST:-https://komodo.${FQDN}}
+      - KOMODO_FIRST_SERVER=${KOMODO_FIRST_SERVER:-https://komodo-periphery:8120}
+      - KOMODO_PASSKEY_FILE=${KOMODO_PASSKEY_FILE:-/run/secrets/komodo_passkey}
+      - KOMODO_FIRST_SERVER_NAME=${KOMODO_FIRST_SERVER_NAME:-Local}
+      - KOMODO_DATABASE_ADDRESS=${KOMODO_DATABASE_ADDRESS:-komodo-mongo:27017}
+      - KOMODO_DATABASE_USERNAME_FILE=${KOMODO_DATABASE_USERNAME_FILE:-/run/secrets/komodo_db_user}
+      - KOMODO_DATABASE_PASSWORD_FILE=${KOMODO_DATABASE_PASSWORD_FILE:-/run/secrets/komodo_db_pass}
+      - KOMODO_OIDC_ENABLED
+      - KOMODO_OIDC_PROVIDER
+      - KOMODO_OIDC_CLIENT_ID_FILE
+      - KOMODO_OIDC_CLIENT_SECRET_FILE
+      - TZ=${TZ:-UTC}
+      - FQDN=${FQDN}
+    volumes:
+      - ${COMPOSE_KOMODO_BACKUPS_PATH:-/etc/komodo/backups}:/backups
+    restart: unless-stopped
+    secrets:
+      - komodo_db_user
+      - komodo_db_pass
+      - komodo_oidc_client_id
+      - komodo_oidc_client_secret
+      - komodo_passkey
+    networks:
+      - komodo_backend
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.komodo.rule=Host(`komodo.${FQDN}`)
+      - traefik.http.routers.komodo.entrypoints=websecure
+      - traefik.http.routers.komodo.tls=true
+      - traefik.http.services.komodo.loadbalancer.server.port=9120
+      - traefik.http.routers.komodo.middlewares=chain-no-auth@file
+      - komodo.skip=true
+
+  periphery:
+    image: ghcr.io/moghtech/komodo-periphery:1.19.5
+    container_name: komodo-periphery
+    profiles: ["prod", "dmz"]
+    environment:
+      - DOCKER_HOST=${DOCKER_HOST:-tcp://socket-proxy:2375}
+      - PERIPHERY_PASSKEYS_FILE=${KOMODO_PASSKEY_FILE:-/run/secrets/komodo_passkey}
+      ## If the disk size is overreporting, can use one of these to
+      ## whitelist / blacklist the disks to filter them, whichever is easier.
+      ## Accepts comma separated list of paths.
+      ## Usually whitelisting just /etc/hostname gives correct size for single root disk.
+      - PERIPHERY_INCLUDE_DISK_MOUNTS=${PERIPHERY_INCLUDE_DISK_MOUNTS:-/etc/hostname}
+      # PERIPHERY_EXCLUDE_DISK_MOUNTS: /snap,/etc/repos
+      - PERIPHERY_ALLOWED_IPS=${PERIPHERY_ALLOWED_IPS:-${LOCAL_IPS}}
+    volumes:
+      - /proc:/proc:ro
+      - ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}:${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}
+      - ${USERDIR}/docker:${USERDIR}/docker
+    restart: unless-stopped
+    secrets:
+      - komodo_passkey
+    networks:
+      - komodo_backend
+      - socket_proxy
+    labels:
+      - komodo.skip=true
+
+networks:
+  komodo_backend:
+
+volumes:
+  mongo-config:
+    name: komodo-config
+    driver: local
+  mongo-data:
+    name: komodo-data
+    driver: local

@@ -92,6 +92,8 @@ docker/secrets/dmz/immich_postgres_password
 !docker/secrets/dmz/immich_postgres_password.sops
 docker/secrets/dmz/immich_postgres_user
 !docker/secrets/dmz/immich_postgres_user.sops
+docker/secrets/dmz/komodo_passkey
+!docker/secrets/dmz/komodo_passkey.sops
 docker/secrets/dmz/nextcloud_admin_password
 !docker/secrets/dmz/nextcloud_admin_password.sops
 docker/secrets/dmz/nextcloud_admin_user
@@ -150,8 +152,6 @@ docker/secrets/prod/komodo_oidc_client_secret
 !docker/secrets/prod/komodo_oidc_client_secret.sops
 docker/secrets/prod/komodo_passkey
 !docker/secrets/prod/komodo_passkey.sops
-docker/secrets/prod/komodo_webhook
-!docker/secrets/prod/komodo_webhook.sops
 docker/secrets/prod/mailrise_discord_webhook_id
 !docker/secrets/prod/mailrise_discord_webhook_id.sops
 docker/secrets/prod/mailrise_discord_webhook_token

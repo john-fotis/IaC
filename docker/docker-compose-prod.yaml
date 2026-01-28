@@ -55,8 +55,6 @@ secrets:
     file: ./secrets/komodo_oidc_client_secret
   komodo_passkey:
     file: ./secrets/komodo_passkey
-  komodo_webhook:
-    file: ./secrets/komodo_webhook
   vaultwarden_zip_password:
     file: ./secrets/vaultwarden_zip_password
 
@@ -75,6 +73,7 @@ include:
   # MAINTENANCE
   # - services/portainer/compose.yaml
   # - services/dockge/compose.yaml
+  - services/komodo/compose.yaml
   # MONITORING
   # - services/grafana/compose.yaml
   # - services/node-exporter/compose.yaml

@@ -26,25 +26,25 @@ services:
       - VERSION=1
       ### Security critical - Revoked by Default
       - AUTH=0
-      - SECRETS=0 # Required to read Docker secrets (Komodo, Portainer)
+      - SECRETS=1 # Required to read Docker secrets (Komodo, Portainer)
       - POST=1 # Required to start/stop/create containers (Komodo)
       ### Not always needed
-      - BUILD=0 # Required if you using "Build" features in Komodo
+      - BUILD=0 # Required if using "Build" features in Komodo
       - COMMIT=0
       - CONFIGS=0
       - CONTAINERS=1 # Required to list and manage containers (Traefik, Komodo, Portainer, etc.)
       - DISTRIBUTION=0
-      - EXEC=0 # Required to use the "Terminal" in Komodo UI
+      - EXEC=1 # Required to use the "Terminal" in Komodo UI
       - IMAGES=1 # Required to pull new versions from Renovate updates (Komodo, Portainer)
-      - INFO=1 # Portainer
+      - INFO=1 # Required to correctly determine container and stack state (Komodo, Portainer)
       - NETWORKS=1 # Required to attach containers to Traefik/DB networks (Komodo, Portainer)
       - NODES=0
       - PLUGINS=0
-      - SERVICES=1 # Portainer
+      - SERVICES=1 # Required for service routing and communication among containers (Komodo, Portainer)
       - SESSION=0
       - SWARM=0
       - SYSTEM=0
-      - TASKS=1 # Portainer
+      - TASKS=1 # Required to manage resource allocation and scaling of the services (Komodo, Portainer)
       - VOLUMES=1 # Required for persistent storage (Komodo, Portainer)
     read_only: true
     tmpfs:

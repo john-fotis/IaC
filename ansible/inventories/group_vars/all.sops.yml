@@ -1,0 +1,19 @@
+sudo_user: ENC[AES256_GCM,data:yEPU8Q==,iv:qGBIhA8wxRS/ljOT/5wk4yTV5SiLoMwZk4y6SStalIw=,tag:o3YOPNtNvWbztNfEVzD4PQ==,type:str]
+ssh_private_key_file: ENC[AES256_GCM,data:IbDucdhOrztdTtSFUlZRlhm0TsK3dCz9MX+u,iv:0xtYSWECBiM6ozAkdgUn9ArFP7/R9V4sdNzAHi/AYyY=,tag:FhRROQ4v8ImQNZMGwRHVeg==,type:str]
+ansible_ssh_private_key_file: ENC[AES256_GCM,data:677hs8vnBvIrcU0CfaN8xf+p6hxyXNG+kXRMeW/SK7/HWw==,iv:sPxDz/rrXlm6pTgnDfcP8sHzeXk2/M22Rii9K+qv61k=,tag:/pOujynB4fsewUkv0JeRzQ==,type:str]
+timezone: ENC[AES256_GCM,data:59lcGAT6jxTEcDl5UA==,iv:qRyVfPxsvtoMbcfJpzHORYYouUjfHgjnpDp4aab+bdo=,tag:iC2VmP7NE0RZrW9RKIaIsg==,type:str]
+sops:
+    age:
+        - recipient: age1dlhdlc6uflznqd6y5lfq0urews04ut7rt9e2gxqh55kzks9yd5vsrsufgp
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWNGJBdTVaYU9SUWpFOXpD
+            Z3pMZWJjSTFvTkluRTJ5MjRVV0ZMbjNWcDE0CkRSY1dLd0UxZXkzR2RNUnp6bHdh
+            Z3FWNmtxVmgzdndsRU0zcXBVMjNXOWMKLS0tIGRlMDZXZUNNM1RFQlFsTW1IaWVL
+            a2dqKzA2dTBsaEl2alJ1cUd0Q2dRRlUKhC7+euLJ/+EOd8e7b/Lp5aaWF6JCfKf+
+            P04RPjs382o07G3V+h+NXftOJfywc7VMkVUteyQKrmLSdwPWo9mDFQ==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-01-28T15:23:36Z"
+    mac: ENC[AES256_GCM,data:VzRfzgLffhPa/yFNMWjcVVOHiVWOh3M8Xmc21BSQeBtmX08PqPwVxvjoDkcBHml5N3UTpKUT6VBgxAXbfuT7P0XiSfiXw0uIzRsi3f3iFD/iCVR1U5whyGY2flUd9SNJn3d3ViVjDm/ctcvmx285LOLENzOtS9EwlxzsSECQXn8=,iv:pmP8jmbbqMyYVHyIEUMn6qL7WNeZejtUAqqPXZ+MA2U=,tag:q2uAEbr+x6f55EUL1hv4aQ==,type:str]
+    unencrypted_suffix: _unencrypted
+    version: 3.11.0

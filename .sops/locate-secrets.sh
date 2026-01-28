@@ -10,7 +10,8 @@ cd "$ROOT_DIR"
 
 # Find all files that should be encrypted, excluding templates and existing .sops files
 advanced_find() {
-    find "$@" ! -path "*template*/*" ! -name "*.sops" >> "$OUTPUT_FILE"
+    # Exclude files already encrypted (ending with .sops or containing .sops.)
+    find "$@" ! -path "*template*/*" ! -name "*.sops" ! -name "*.sops.*" >> "$OUTPUT_FILE"
 }
 
 # .env files (except .env.sample)
@@ -36,6 +37,5 @@ sort -u "$OUTPUT_FILE" -o "$OUTPUT_FILE"
 
 # Cleanup
 sed -i 's|^\./||' "$OUTPUT_FILE"
-sed -i '/\.sops$/d' "$OUTPUT_FILE"
 
 echo "Secrets located and filtered in $OUTPUT_FILE"

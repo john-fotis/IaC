@@ -23,20 +23,21 @@ while IFS= read -r file_path || [[ -n "$file_path" ]]; do
     file_path=$(echo "$file_path" | tr -d '\r' | xargs)
     [[ -z "$file_path" ]] && continue
 
-    # Validate full source file path and define encrypted file path
+    # Validate full source file path
     FULL_SRC_PATH="$ROOT_DIR/$file_path"
     if [[ ! -f "$FULL_SRC_PATH" ]]; then
         echo -e "${RED}Warning: File $file_path not found. Skipping.${NC}"
         continue
     fi
-    ENCRYPTED_FILE="${FULL_SRC_PATH}.sops"
 
+    # Add .sops right before the file extension or at the end if the file has no extension
+    encrypted_file="$ROOT_DIR/${file_path%.*}.sops${file_path##${file_path%.*}}"
     # Check if encrypted file already exists
-    if [[ -f "$ENCRYPTED_FILE" ]]; then
+    if [[ -f "$encrypted_file" ]]; then
         # Create temporary file for decrypted comparison
         decrypted_temp=$(mktemp)
-        # Decrypt existing file in binary mode and compare with source file
-        if sops --decrypt --input-type binary --output-type binary "$ENCRYPTED_FILE" >"$decrypted_temp" 2>/dev/null; then
+        # Decrypt existing file and compare with source file
+        if sops --decrypt "$encrypted_file" >"$decrypted_temp" 2>/dev/null; then
             if cmp -s "$FULL_SRC_PATH" "$decrypted_temp"; then
                 echo -e "${GREEN}No changes detected in ${file_path}. Skipping...${NC}"
                 rm "$decrypted_temp"
@@ -49,8 +50,8 @@ while IFS= read -r file_path || [[ -n "$file_path" ]]; do
         echo -e "${RED}Encrypting: ${file_path}${NC}"
     fi
 
-    # Encrypt source file in binary mode to preserve formatting and avoid parsing errors
-    sops --encrypt --age "$AGE_PUBLIC_KEY" --input-type binary --output-type binary "$FULL_SRC_PATH" > "$ENCRYPTED_FILE"
+    # Encrypt source file
+    sops --encrypt --age "$AGE_PUBLIC_KEY" "$FULL_SRC_PATH" > "$encrypted_file"
 
 done < "$INPUT_FILE"
 

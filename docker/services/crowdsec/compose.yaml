@@ -2,7 +2,7 @@
 services:
   # CrowdSec - Open-source & collaborative security IPS
   crowdsec:
-    image: crowdsecurity/crowdsec:v1.7.4
+    image: crowdsecurity/crowdsec:v1.7.6
     container_name: crowdsec
     security_opt:
       - no-new-privileges:true

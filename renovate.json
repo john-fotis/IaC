@@ -30,10 +30,10 @@
         "minor",
         "patch"
       ],
-      "excludePackageNames": [
-        "yoryan/mailrise"
-      ],
-      "groupName": "Weekly Docker Minor & Patch Updates"
+      "groupName": "Weekly Docker Minor & Patch Updates",
+      "matchPackageNames": [
+        "!yoryan/mailrise"
+      ]
     },
     {
       "description": "Disable Postgres major updates",

@@ -1,6 +1,6 @@
 services:
   whoami:
-    image: ghcr.io/traefik/whoami:latest
+    image: ghcr.io/traefik/whoami:v1.11
     container_name: whoami
     profiles: ["prod", "dmz", "test"]
     restart: unless-stopped

@@ -1,7 +1,7 @@
 ---
 services:
   ddclient:
-    image: lscr.io/linuxserver/ddclient:latest
+    image: lscr.io/linuxserver/ddclient:4.0.0
     container_name: ddclient
     user: "${PUID:-1000}:${PGID:-1000}"
     profiles: ["prod"]
@@ -17,6 +17,4 @@ services:
       - ./cache:/var/cache/ddclient:rw
     secrets:
       - cf_dns_api_token
-    entrypoint: ["/bin/sh"]
-    command: ["-c", "/config/entrypoint.sh"]
     restart: always

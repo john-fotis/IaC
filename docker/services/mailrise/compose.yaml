@@ -1,6 +1,6 @@
 services:
   mailrise:
-    image: yoryan/mailrise:latest
+    image: yoryan/mailrise:latest@sha256:0b8b1ce3447c83b625c9e8896cd9c3db0205590f92ce4d4adaae69729830f52b
     profiles: ["prod"]
     container_name: mailrise
     environment:

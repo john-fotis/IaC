@@ -1,6 +1,64 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":pinDigestsDisabled"
+  ],
+  "labels": [
+    "dependencies",
+    "renovate"
+  ],
+  "timezone": "Europe/Athens",
+  "schedule": [
+    "after 6pm and before 8pm on friday"
+  ],
+  "dependencyDashboard": true,
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "description": "Group all Docker minor & patch updates into a single weekly PR",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "excludePackageNames": [
+        "yoryan/mailrise"
+      ],
+      "groupName": "Weekly Docker Minor & Patch Updates"
+    },
+    {
+      "description": "Open Docker major updates as separate PRs",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "separateMultipleMajor": true
+    },
+    {
+      "description": "Pin digests for images that only use 'latest' tag",
+      "matchPackageNames": [
+        "yoryan/mailrise"
+      ],
+      "matchCurrentValue": "latest",
+      "pinDigests": true
+    },
+    {
+      "description": "Disable Postgres major updates",
+      "matchPackageNames": [
+        "postgres"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "separateMajorMinor": true,
+      "major": {
+        "enabled": false
+      }
+    }
   ]
 }

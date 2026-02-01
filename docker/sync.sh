@@ -127,6 +127,8 @@ for HOST in ${HOSTS[$GROUP]}; do
             "${INCLUDED_SVCS[@]}" --exclude='*' \
             "$SCRIPT_DIR/services/" "$HOST:$DEST_DIR/services/"
     fi
+    # Clean up any .sops files on remote host
+    $DRY_RUN || ssh "$HOST" "find ~/ -type f -name "*.sops*" 2> /dev/null | xargs rm -f"
 done
 
 echo -e "${GREEN}Sync completed successfully for $GROUP.${NC}"

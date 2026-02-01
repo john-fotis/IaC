@@ -71,9 +71,9 @@ include:
   - services/apprise/compose.yaml
   - services/mailrise/compose.yaml
   # MAINTENANCE
-  # - services/portainer/compose.yaml
-  # - services/dockge/compose.yaml
   - services/komodo/compose.yaml
+  - services/portainer/compose.yaml
+  # - services/dockge/compose.yaml
   # MONITORING
   # - services/grafana/compose.yaml
   # - services/node-exporter/compose.yaml

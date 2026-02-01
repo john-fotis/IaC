@@ -7,13 +7,14 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 465:465
-      - 8120:8120
+      - 465:465   # SMTP over SSL
+      - 8120:8120 # Komodo TCP
+      - 9001:9001 # Portainer Agent TCP
     profiles: ["prod", "dmz"]
     environment:
       - TZ=${TZ}
-      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_dns_api_token
-      - HTPASSWD_FILE=/run/secrets/basic_auth_credentials
+      - CF_DNS_API_TOKEN_FILE=${CF_DNS_API_TOKEN_FILE:-/run/secrets/cf_dns_api_token}
+      - HTPASSWD_FILE=${HTPASSWD_FILE:-/run/secrets/basic_auth_credentials}
       - DOMAIN=${FQDN}
       - DNS_ZONE=${DNS_ZONE:-${FQDN}}
     volumes:

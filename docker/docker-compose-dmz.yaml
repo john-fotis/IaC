@@ -63,6 +63,7 @@ include:
   # - services/oauth/compose.yaml
   # MAINETENANCE
   - services/komodo/compose.yaml
+  - services/portainer/compose.yaml
   # SECURITY & AUTHENTICATION
   - services/crowdsec/compose.yaml
   # MEDIA

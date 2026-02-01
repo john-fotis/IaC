@@ -1,0 +1,14 @@
+tcp:
+  routers:
+    portainer-agent:
+      entryPoints:
+        - portainer-tcp
+      rule: "HostSNI(`phobos.integraceion.com`)"
+      service: portainer-agent
+      tls:
+        passthrough: true
+  services:
+    portainer-agent:
+      loadBalancer:
+        servers:
+          - address: portainer-agent:9001

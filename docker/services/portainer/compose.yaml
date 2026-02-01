@@ -1,0 +1,44 @@
+services:
+  portainer:
+    image: portainer/portainer-ee:2.38.0-alpine
+    container_name: portainer
+    security_opt:
+      - no-new-privileges:true
+    profiles: ["prod"]
+    environment:
+      - TZ=${TZ}
+    networks:
+      - traefik
+      - socket_proxy
+    volumes:
+      - portainer-data:/data
+    command: -H tcp://socket-proxy:2375
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.entrypoints=websecure
+      - traefik.http.routers.portainer.rule=Host(`portainer.${FQDN}`)
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.service=portainer
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - traefik.http.routers.portainer.middlewares=chain-no-auth@file
+
+  portainer-agent:
+    image: portainer/agent:2.38.0-alpine
+    container_name: portainer-agent
+    profiles: ["dmz"]
+    environment:
+      - DOCKER_HOST=tcp://socket-proxy:2375
+    networks:
+      - socket_proxy
+    volumes:
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    # Port forwarding is handled by traefik
+    # ports:
+    #   - "9001:9001"
+    restart: unless-stopped
+
+volumes:
+  portainer-data:
+    name: portainer-data
+    driver: local

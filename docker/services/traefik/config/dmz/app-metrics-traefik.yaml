@@ -1,0 +1,16 @@
+http:
+  middlewares:
+    metrics-traefik-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist
+
+  routers:
+    metrics-traefik:
+      rule: Host(`traefik.integraceion.com`) && Path(`/metrics`)
+      entryPoints:
+        - websecure
+      service: prometheus@internal
+      middlewares:
+        - metrics-traefik-chain
+      tls: {}

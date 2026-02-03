@@ -1,0 +1,28 @@
+http:
+  routers:
+    metrics-cadvisor:
+      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/cadvisor`)
+      entryPoints:
+        - websecure
+      middlewares:
+        - metrics-cadvisor-chain
+      service: metrics-cadvisor
+      tls: {}
+
+  services:
+    metrics-cadvisor:
+      loadBalancer:
+        servers:
+          - url: http://cadvisor:8080
+
+  middlewares:
+    metrics-cadvisor-strip:
+      stripPrefix:
+        prefixes:
+          - /cadvisor
+
+    metrics-cadvisor-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist@file
+          - metrics-cadvisor-strip

@@ -1,0 +1,4 @@
+- targets: ["authentik-server:9300"]
+  labels:
+    job: authentik
+    env: prod

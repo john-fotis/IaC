@@ -1,0 +1,54 @@
+name: grafana
+services:
+  grafana:
+    image: grafana/grafana:12.3.2
+    container_name: grafana
+    profiles: ["prod"]
+    security_opt:
+      - no-new-privileges:true
+    user: ${PUID:-1000}
+    environment:
+      - GF_SECURITY_ADMIN_USER__FILE
+      - GF_SECURITY_ADMIN_PASSWORD__FILE
+      - GF_OTEL_ORG_NAME
+      # - GF_PLUGINS_PREINSTALL
+      - GF_AUTH_GENERIC_OAUTH_ENABLED
+      - GF_AUTH_GENERIC_OAUTH_NAME
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID__FILE
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET__FILE
+      - GF_AUTH_GENERIC_OAUTH_SCOPES
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL
+      - GF_AUTH_GENERIC_OAUTH_API_URL
+      - GF_AUTH_SIGNOUT_REDIRECT_URL
+      # Optionally enable auto-login (bypasses Grafana login screen)
+      - GF_AUTH_OAUTH_AUTO_LOGIN
+      # Optionally map user groups to Grafana roles
+      - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH
+      # Required if Grafana is running behind a reverse proxy
+      - GF_SERVER_ROOT_URL
+    networks:
+      - traefik
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/dashboards:/var/lib/grafana/dashboards:ro
+      - ./config/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+    secrets:
+      - grafana_admin_username
+      - grafana_admin_password
+      - grafana_oauth_client_id
+      - grafana_oauth_client_secret
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`grafana.${FQDN}`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls=true
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
+      - traefik.http.routers.grafana.middlewares=chain-no-auth@file
+
+volumes:
+  grafana-data:
+    name: grafana-data
+    driver: local

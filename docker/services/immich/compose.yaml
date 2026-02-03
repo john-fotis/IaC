@@ -11,6 +11,7 @@ services:
       - DB_USERNAME_FILE=${IMMICH_POSTGRES_USER_FILE-/run/secrets/immich_postgres_user}
       - DB_PASSWORD_FILE=${IMMICH_POSTGRES_PASS_FILE-/run/secrets/immich_postgres_password}
       - REDIS_HOSTNAME=immich-redis
+      - IMMICH_TELEMETRY_INCLUDE=${IMMICH_TELEMETRY_INCLUDE:-all}
     networks:
       - traefik
       - db

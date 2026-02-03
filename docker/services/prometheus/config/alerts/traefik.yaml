@@ -1,0 +1,10 @@
+groups:
+  - name: traefik_alerts
+    rules:
+      - alert: TraefikDown
+        expr: up{job="traefik"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Traefik is down on {{ $labels.instance }}"

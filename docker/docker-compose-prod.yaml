@@ -45,6 +45,14 @@ secrets:
     file: ./secrets/gmail_smtp_username
   gmail_smtp_password:
     file: ./secrets/gmail_smtp_password
+  grafana_admin_username:
+    file: ./secrets/grafana_admin_username
+  grafana_admin_password:
+    file: ./secrets/grafana_admin_password
+  grafana_oauth_client_id:
+    file: ./secrets/grafana_oauth_client_id
+  grafana_oauth_client_secret:
+    file: ./secrets/grafana_oauth_client_secret
   komodo_db_user:
     file: ./secrets/komodo_db_user
   komodo_db_pass:
@@ -73,10 +81,11 @@ include:
   # MAINTENANCE
   - services/komodo/compose.yaml
   - services/portainer/compose.yaml
-  # - services/dockge/compose.yaml
   # MONITORING
-  # - services/grafana/compose.yaml
-  # - services/node-exporter/compose.yaml
+  - services/prometheus/compose.yaml
+  - services/node-exporter/compose.yaml
+  - services/cadvisor/compose.yaml
+  - services/grafana/compose.yaml
   # MISC
   - services/speedtest-tracker/compose.yaml
   - services/whoami/compose.yaml

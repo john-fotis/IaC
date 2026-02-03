@@ -1,0 +1,56 @@
+---
+name: prometheus
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.1
+    container_name: prometheus
+    profiles: ["prod"]
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - prometheus
+      - traefik
+    volumes:
+      - ./config:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prometheus.rule=Host(`prometheus.${FQDN}`)
+      - traefik.http.routers.prometheus.entrypoints=websecure
+      - traefik.http.routers.prometheus.tls=true
+      - traefik.http.services.prometheus.loadbalancer.server.port=9090
+      - traefik.http.routers.prometheus.middlewares=chain-authentik@file
+
+  alertmanager:
+    image: prom/alertmanager:v0.30.1
+    container_name: alertmanager
+    profiles: ["prod"]
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - prometheus
+      - traefik
+    volumes:
+      # - ./alertmanager:/etc/alertmanager/
+      - alertmanager-data:/alertmanager
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.alertmanager.rule=Host(`alertmanager.${FQDN}`)
+      - traefik.http.routers.alertmanager.entrypoints=websecure
+      - traefik.http.routers.alertmanager.tls=true
+      - traefik.http.services.alertmanager.loadbalancer.server.port=9093
+      - traefik.http.routers.alertmanager.middlewares=chain-authentik@file
+
+networks:
+  prometheus:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+    name: prometheus-data
+    driver: local
+  alertmanager-data:
+    name: alertmanager-data
+    driver: local

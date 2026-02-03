@@ -1,0 +1,4 @@
+- targets: ["crowdsec:6060"]
+  labels:
+    job: crowdsec
+    env: prod

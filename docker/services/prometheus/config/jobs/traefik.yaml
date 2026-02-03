@@ -1,0 +1,4 @@
+- targets: ["traefik:8080"]
+  labels:
+    job: traefik
+    env: prod

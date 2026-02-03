@@ -1,0 +1,53 @@
+http:
+  routers:
+    metrics-immich-api:
+      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/immich/api`)
+      entryPoints:
+        - websecure
+      middlewares:
+        - metrics-immich-api-chain
+      service: metrics-immich-api
+      tls: {}
+
+    metrics-immich-microservices:
+      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/immich/microservices`)
+      entryPoints:
+        - websecure
+      middlewares:
+        - metrics-immich-microservices-chain
+      service: metrics-immich-microservices
+      tls: {}
+
+  services:
+    metrics-immich-api:
+      loadBalancer:
+        servers:
+          - url: http://immich:8081
+
+    metrics-immich-microservices:
+      loadBalancer:
+        servers:
+          - url: http://immich:8082
+
+  middlewares:
+    metrics-immich-api-strip:
+      stripPrefix:
+        prefixes:
+          - /immich/api
+
+    metrics-immich-microservices-strip:
+      stripPrefix:
+        prefixes:
+          - /immich/microservices
+
+    metrics-immich-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist@file
+          - metrics-immich-api-strip
+
+    metrics-immich-microservices-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist@file
+          - metrics-immich-microservices-strip

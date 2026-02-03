@@ -142,6 +142,14 @@ docker/secrets/prod/cf_dns_api_token
 !docker/secrets/prod/cf_dns_api_token.sops
 docker/secrets/prod/crowdsec_lapi_key
 !docker/secrets/prod/crowdsec_lapi_key.sops
+docker/secrets/prod/grafana_admin_password
+!docker/secrets/prod/grafana_admin_password.sops
+docker/secrets/prod/grafana_admin_username
+!docker/secrets/prod/grafana_admin_username.sops
+docker/secrets/prod/grafana_oauth_client_id
+!docker/secrets/prod/grafana_oauth_client_id.sops
+docker/secrets/prod/grafana_oauth_client_secret
+!docker/secrets/prod/grafana_oauth_client_secret.sops
 docker/secrets/prod/komodo_db_pass
 !docker/secrets/prod/komodo_db_pass.sops
 docker/secrets/prod/komodo_db_user

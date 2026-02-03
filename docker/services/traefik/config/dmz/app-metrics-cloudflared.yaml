@@ -1,0 +1,28 @@
+http:
+  routers:
+    metrics-cloudflared:
+      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/cloudflared`)
+      entryPoints:
+        - websecure
+      middlewares:
+        - metrics-cloudflared-chain
+      service: metrics-cloudflared
+      tls: {}
+
+  services:
+    metrics-cloudflared:
+      loadBalancer:
+        servers:
+          - url: http://cloudflared:20241
+
+  middlewares:
+    metrics-cloudflared-strip:
+      stripPrefix:
+        prefixes:
+          - /cloudflared
+
+    metrics-cloudflared-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist@file
+          - metrics-cloudflared-strip

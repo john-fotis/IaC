@@ -1,0 +1,51 @@
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds
+  evaluation_interval: 15s # Evaluate rules every 15 seconds
+  # scrape_timeout is set to the global default (10s)
+  external_labels:
+    monitor: "central-monitor"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+  - /etc/prometheus/alerts/*.yaml
+
+scrape_configs:
+  # Self-Monitoring
+  - job_name: "Prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          app: prometheus
+          env: prod
+
+  # Production Stack - Uses Docker internal networking
+  - job_name: "Node Exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          job: node-exporter
+          env: prod
+
+  - job_name: "cAdvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels:
+          job: cadvisor
+          env: prod
+
+  # Catch-all for external jobs via file_sd
+  - job_name: "File SD Jobs"
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/jobs/*.yml
+          - /etc/prometheus/jobs/*.yaml
+    relabel_configs:
+      - target_label: source
+        replacement: filesd

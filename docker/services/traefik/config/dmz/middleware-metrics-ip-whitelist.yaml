@@ -1,0 +1,8 @@
+http:
+  middlewares:
+    metrics-ip-whitelist:
+      ipAllowList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "192.168.10.0/24"
+          - "192.168.99.0/24"

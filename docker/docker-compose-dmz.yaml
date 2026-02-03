@@ -64,6 +64,9 @@ include:
   # MAINETENANCE
   - services/komodo/compose.yaml
   - services/portainer/compose.yaml
+  # MONITORING
+  - services/node-exporter/compose.yaml
+  - services/cadvisor/compose.yaml
   # SECURITY & AUTHENTICATION
   - services/crowdsec/compose.yaml
   # MEDIA

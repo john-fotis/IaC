@@ -1,0 +1,49 @@
+# DMZ Stack - Metrics scraped via HTTPS published endpoints
+- targets: ["traefik.integraceion.com"]
+  labels:
+    env: dmz
+    job: traefik
+    __scheme__: https
+    __metrics_path__: /metrics
+
+- targets: ["metrics.integraceion.com"]
+  labels:
+    env: dmz
+    job: node-exporter
+    __scheme__: https
+    __metrics_path__: /node-exporter/metrics
+
+- targets: ["metrics.integraceion.com"]
+  labels:
+    env: dmz
+    job: cadvisor
+    __scheme__: https
+    __metrics_path__: /cadvisor/metrics
+
+- targets: ["metrics.integraceion.com"]
+  labels:
+    env: dmz
+    job: crowdsec
+    __scheme__: https
+    __metrics_path__: /crowdsec/metrics
+
+- targets: ["metrics.integraceion.com"]
+  labels:
+    env: dmz
+    job: cloudflared
+    __scheme__: https
+    __metrics_path__: /cloudflared/metrics
+
+- targets: ["metrics.integraceion.com"]
+  labels:
+    env: dmz
+    job: immich-api
+    __scheme__: https
+    __metrics_path__: /immich/api/metrics
+
+- targets: ["metrics.integraceion.com"]
+  labels:
+    env: dmz
+    job: immich-microservices
+    __scheme__: https
+    __metrics_path__: /immich/microservices/metrics

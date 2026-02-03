@@ -1,0 +1,28 @@
+http:
+  routers:
+    metrics-crowdsec:
+      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/crowdsec`)
+      entryPoints:
+        - websecure
+      middlewares:
+        - metrics-crowdsec-chain
+      service: metrics-crowdsec
+      tls: {}
+
+  services:
+    metrics-crowdsec:
+      loadBalancer:
+        servers:
+          - url: http://crowdsec:6060
+
+  middlewares:
+    metrics-crowdsec-strip:
+      stripPrefix:
+        prefixes:
+          - /crowdsec
+
+    metrics-crowdsec-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist@file
+          - metrics-crowdsec-strip

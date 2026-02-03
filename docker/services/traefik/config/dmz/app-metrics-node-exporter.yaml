@@ -1,0 +1,28 @@
+http:
+  routers:
+    metrics-node-exporter:
+      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/node-exporter`)
+      entryPoints:
+        - websecure
+      middlewares:
+        - metrics-node-exporter-chain
+      service: metrics-node-exporter
+      tls: {}
+
+  services:
+    metrics-node-exporter:
+      loadBalancer:
+        servers:
+          - url: http://node-exporter:9100
+
+  middlewares:
+    metrics-node-exporter-strip:
+      stripPrefix:
+        prefixes:
+          - /node-exporter
+
+    metrics-node-exporter-chain:
+      chain:
+        middlewares:
+          - metrics-ip-whitelist@file
+          - metrics-node-exporter-strip

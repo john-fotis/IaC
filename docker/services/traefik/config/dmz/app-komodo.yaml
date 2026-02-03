@@ -3,7 +3,7 @@ tcp:
     komodo-periphery:
       entryPoints:
         - komodo-tcp
-      rule: "HostSNI(`phobos.integraceion.com`)"
+      rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
       service: komodo-periphery
       tls:
         passthrough: true

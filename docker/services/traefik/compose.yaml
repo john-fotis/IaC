@@ -8,7 +8,7 @@ services:
       - 80:80
       - 443:443
       - 465:465   # SMTP over SSL
-      - 8120:8120 # Komodo TCP
+      - 8120:8120 # Komodo Periphery TCP
       - 9001:9001 # Portainer Agent TCP
     profiles: ["prod", "dmz"]
     environment:

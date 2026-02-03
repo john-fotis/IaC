@@ -3,7 +3,7 @@ tcp:
     portainer-agent:
       entryPoints:
         - portainer-tcp
-      rule: "HostSNI(`phobos.integraceion.com`)"
+      rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
       service: portainer-agent
       tls:
         passthrough: true

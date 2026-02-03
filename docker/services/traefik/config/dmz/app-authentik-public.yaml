@@ -18,33 +18,11 @@ http:
         servers:
           - url: https://authentik.local.{{env "DOMAIN"}}/
 
-    blocked:
-      loadBalancer:
-        servers:
-          - url: http://0.0.0.0
-
   serversTransports:
     authentik-transport:
       serverName: authentik.local.{{env "DOMAIN"}}
 
   middlewares:
-    # authentik-public-headers:
-    #   headers:
-    #     sslRedirect: true
-    #     browserXssFilter: true
-    #     contentTypeNosniff: true
-    #     forceSTSHeader: true
-    #     stsIncludeSubdomains: true
-    #     stsPreload: true
-    #     stsSeconds: 63072000
-    #     customRequestHeaders:
-    #       # Backend (prod Authentik) expects this Host
-    #       Host: authentik.local.{{env "DOMAIN"}}
-    #       # But client should keep seeing this Host
-    #       X-Forwarded-Host: auth.{{env "DOMAIN"}}
-    #       X-Forwarded-Proto: https
-    #       X-Forwarded-Port: 443
-
     authentik-rewrite-headers:
       headers:
         customResponseHeaders:
@@ -54,7 +32,7 @@ http:
       errors:
         status:
           - 403
-        service: blocked
+        service: noop@internal
         query: /
 
     authentik-public-rewrite-location:
@@ -67,6 +45,4 @@ http:
       chain:
         middlewares:
           - authentik-public-block-admin
-          # - authentik-public-headers
-          # - authentik-public-rewrite-headers
           - authentik-public-rewrite-location

@@ -1,0 +1,50 @@
+http:
+  routers:
+    # Serve vaultwarden regular paths
+    vaultwarden-public:
+      rule: Host(`vault.{{env "DOMAIN"}}`)
+      entryPoints:
+        - websecure
+      priority: 10
+      middlewares:
+        - vaultwarden-public-rewrite-location
+      service: vaultwarden-public
+      tls:
+        certResolver: cloudflare
+
+    # Redirect /admin paths to /
+    vaultwarden-public-admin-redirect:
+      rule: Host(`vault.{{env "DOMAIN"}}`) && PathRegexp(`^/admin(/.*)?$`)
+      entryPoints:
+        - websecure
+      priority: 100
+      middlewares:
+        - vaultwarden-public-redirect-to-root
+      service: noop@internal
+      tls:
+        certResolver: cloudflare
+
+  services:
+    vaultwarden-public:
+      loadBalancer:
+        passHostHeader: false
+        serversTransport: vaultwarden-transport
+        servers:
+          - url: https://vaultwarden.local.{{env "DOMAIN"}}/
+
+  serversTransports:
+    vaultwarden-transport:
+      serverName: vaultwarden.local.{{env "DOMAIN"}}
+
+  middlewares:
+    vaultwarden-public-rewrite-location:
+      redirectRegex:
+        regex: ^https://vaultwarden\.local\.{{env "DOMAIN"}}(/.*)?$
+        replacement: https://vaultwarden.{{env "DOMAIN"}}$1
+        permanent: false
+
+    vaultwarden-public-redirect-to-root:
+      redirectRegex:
+        regex: ^https://vault\.{{env "DOMAIN"}}/admin(/.*)?$
+        replacement: https://vault.{{env "DOMAIN"}}/
+        permanent: false

@@ -22,23 +22,29 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
         labels:
+          instance: athena
           app: prometheus
           env: prod
+          host_type: lxc
 
   # Production Stack - Uses Docker internal networking
   - job_name: "Node Exporter"
     static_configs:
       - targets: ["node-exporter:9100"]
         labels:
+          instance: athena
           job: node-exporter
           env: prod
+          host_type: lxc
 
   - job_name: "cAdvisor"
     static_configs:
       - targets: ["cadvisor:8080"]
         labels:
+          instance: athena
           job: cadvisor
           env: prod
+          host_type: lxc
 
   # Catch-all for external jobs via file_sd
   - job_name: "File SD Jobs"

@@ -1,4 +1,6 @@
 - targets: ["traefik:8080"]
   labels:
+    instance: athena
     job: traefik
     env: prod
+    host_type: lxc

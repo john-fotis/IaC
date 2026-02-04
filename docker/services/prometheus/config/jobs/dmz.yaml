@@ -1,49 +1,63 @@
 # DMZ Stack - Metrics scraped via HTTPS published endpoints
 - targets: ["traefik.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: traefik
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: node-exporter
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /node-exporter/metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: cadvisor
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /cadvisor/metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: crowdsec
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /crowdsec/metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: cloudflared
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /cloudflared/metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: immich-api
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /immich/api/metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:
-    env: dmz
+    instance: phobos
     job: immich-microservices
+    env: dmz
+    host_type: vm
     __scheme__: https
     __metrics_path__: /immich/microservices/metrics

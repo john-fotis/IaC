@@ -86,6 +86,8 @@ docker/secrets/dmz/cloudflared_token
 !docker/secrets/dmz/cloudflared_token.sops
 docker/secrets/dmz/crowdsec_lapi_key
 !docker/secrets/dmz/crowdsec_lapi_key.sops
+docker/secrets/dmz/crowdsec_maxmind_license_key
+!docker/secrets/dmz/crowdsec_maxmind_license_key.sops
 docker/secrets/dmz/immich_postgres_db
 !docker/secrets/dmz/immich_postgres_db.sops
 docker/secrets/dmz/immich_postgres_password
@@ -142,6 +144,8 @@ docker/secrets/prod/cf_dns_api_token
 !docker/secrets/prod/cf_dns_api_token.sops
 docker/secrets/prod/crowdsec_lapi_key
 !docker/secrets/prod/crowdsec_lapi_key.sops
+docker/secrets/prod/crowdsec_maxmind_license_key
+!docker/secrets/prod/crowdsec_maxmind_license_key.sops
 docker/secrets/prod/grafana_admin_password
 !docker/secrets/prod/grafana_admin_password.sops
 docker/secrets/prod/grafana_admin_username

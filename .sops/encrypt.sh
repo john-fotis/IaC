@@ -34,10 +34,10 @@ while IFS= read -r file_path || [[ -n "$file_path" ]]; do
     encrypted_file="$ROOT_DIR/${file_path%.*}.sops${file_path##${file_path%.*}}"
     # Check if encrypted file already exists
     if [[ -f "$encrypted_file" ]]; then
-        # Create temporary file for decrypted comparison
         decrypted_temp=$(mktemp)
         # Decrypt existing file and compare with source file
-        if sops --decrypt "$encrypted_file" >"$decrypted_temp" 2>/dev/null; then
+        if sops --decrypt "$encrypted_file" >"$decrypted_temp" 2>/dev/null || \
+           sops --decrypt --input-type binary --output-type binary "$encrypted_file" >"$decrypted_temp" 2>/dev/null; then
             if cmp -s "$FULL_SRC_PATH" "$decrypted_temp"; then
                 echo -e "${GREEN}No changes detected in ${file_path}. Skipping...${NC}"
                 rm "$decrypted_temp"
@@ -50,8 +50,10 @@ while IFS= read -r file_path || [[ -n "$file_path" ]]; do
         echo -e "${RED}Encrypting: ${file_path}${NC}"
     fi
 
-    # Encrypt source file
-    sops --encrypt --age "$AGE_PUBLIC_KEY" "$FULL_SRC_PATH" > "$encrypted_file"
+    # Attempt encryption with default settings first, fallback to binary if it fails
+    if ! sops --encrypt --age "$AGE_PUBLIC_KEY" "$FULL_SRC_PATH" > "$encrypted_file" 2>/dev/null; then
+        sops --encrypt --input-type binary --output-type binary --age "$AGE_PUBLIC_KEY" "$FULL_SRC_PATH" > "$encrypted_file"
+    fi
 
 done < "$INPUT_FILE"
 

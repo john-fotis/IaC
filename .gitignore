@@ -118,6 +118,8 @@ docker/secrets/dmz/oauth_secret
 docker/secrets/dmz/oauth_secrets
 !docker/secrets/dmz/oauth_secret.sops
 !docker/secrets/dmz/oauth_secrets.sops
+docker/secrets/dmz/pulse_agent_token
+!docker/secrets/dmz/pulse_agent_token.sops
 docker/secrets/dmz/traefik_forward_oauth
 !docker/secrets/dmz/traefik_forward_oauth.sops
 docker/secrets/prod/apprise_discord_webhook_id
@@ -174,6 +176,8 @@ docker/secrets/prod/vaultwarden_zip_password
 !docker/secrets/prod/vaultwarden_zip_password.sops
 docker/services/ddclient/config/ddclient.conf
 !docker/services/ddclient/config/ddclient.conf.sops
+docker/services/graphite-exporter/config/graphite_mapping.conf
+!docker/services/graphite-exporter/config/graphite_mapping.conf.sops
 docker/services/traefik/config/dmz/traefik.yaml
 !docker/services/traefik/config/dmz/traefik.yaml.sops
 docker/services/traefik/config/prod/traefik.yaml

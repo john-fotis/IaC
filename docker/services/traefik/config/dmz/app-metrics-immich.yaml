@@ -40,7 +40,7 @@ http:
         prefixes:
           - /immich/microservices
 
-    metrics-immich-chain:
+    metrics-immich-api-chain:
       chain:
         middlewares:
           - metrics-ip-whitelist@file

@@ -887,7 +887,7 @@
                         "uid": "prometheus_ds"
                     },
                     "editorMode": "code",
-                    "expr": "sum by (instance) (rate(process_cpu_seconds_total{instance=~\"$server\"}[$interval])) * 100",
+                    "expr": "sum by (instance) (rate(node_cpu_seconds_total{instance=~\"$server\", mode!=\"idle\"}[$interval])) \n  / \n  count by (instance) (node_cpu_seconds_total{instance=~\"$server\", mode=\"idle\"}) * 100",
                     "hide": false,
                     "interval": "",
                     "intervalFactor": 2,

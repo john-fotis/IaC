@@ -1,0 +1,23 @@
+http:
+  routers:
+    truenas-net-data:
+      rule: "Host(`truenas-net-data.{{env "DOMAIN"}}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - chain-truenas-net-data
+      service: truenas-net-data
+      tls:
+        certResolver: cloudflare
+  services:
+    truenas-net-data:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://clio.{{env "DNS_ZONE"}}:20489
+  middlewares:
+    chain-truenas-net-data:
+      chain:
+        middlewares:
+          - chain-authentik
+          - secure-headers

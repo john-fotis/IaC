@@ -1,0 +1,31 @@
+http:
+  routers:
+    pbs:
+      rule: "Host(`pbs.{{env "DOMAIN"}}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - chain-pbs
+      service: pbs
+      tls:
+        certResolver: cloudflare
+  services:
+    pbs:
+      loadBalancer:
+        passHostHeader: true
+        serversTransport: pbs-transport
+        servers:
+          - url: https://chronos.{{env "DNS_ZONE"}}:8007
+  serversTransports:
+    pbs-transport:
+      insecureSkipVerify: true
+  middlewares:
+    pbs-host-headers:
+      headers:
+        customRequestHeaders:
+          Host: chronos.{{env "DNS_ZONE"}}
+    chain-pbs:
+      chain:
+        middlewares:
+          - pbs-host-headers
+          - secure-headers

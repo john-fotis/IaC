@@ -1,0 +1,27 @@
+http:
+  routers:
+    pulse:
+      rule: "Host(`pulse.{{env "DOMAIN"}}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - chain-pulse
+      service: pulse
+      tls:
+        certResolver: cloudflare
+  services:
+    pulse:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://argus.{{env "DNS_ZONE"}}:7655
+  middlewares:
+    pulse-host-headers:
+      headers:
+        customRequestHeaders:
+          Host: argus.{{env "DNS_ZONE"}}
+    chain-pulse:
+      chain:
+        middlewares:
+          - pulse-host-headers
+          - secure-headers

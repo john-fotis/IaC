@@ -22,17 +22,18 @@
   ],
   "packageRules": [
     {
-      "description": "Group all Docker minor & patch updates into a single weekly PR",
+      "description": "Group Docker minor, patch, and digest updates",
       "matchDatasources": [
         "docker"
       ],
       "matchUpdateTypes": [
         "minor",
-        "patch"
+        "patch",
+        "digest"
       ],
       "groupName": "Weekly Docker Minor & Patch Updates",
-      "matchPackageNames": [
-        "!yoryan/mailrise"
+      "excludePackageNames": [
+        "postgres"
       ]
     },
     {
@@ -49,17 +50,20 @@
       }
     },
     {
-      "description": "Pin digests for images that only use 'latest' tag",
-      "matchPackageNames": [
-        "yoryan/mailrise"
+      "description": "Enable digest pinning for ANY image using the 'latest' tag",
+      "matchDatasources": [
+        "docker"
       ],
       "matchCurrentValue": "latest",
       "pinDigests": true
     },
     {
-      "description": "Open individual PRs for Major updates",
+      "description": "Open individual PRs for Major updates (non-db)",
       "matchUpdateTypes": [
         "major"
+      ],
+      "excludePackageNames": [
+        "postgres"
       ],
       "groupName": null
     }

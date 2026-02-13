@@ -1,6 +1,6 @@
 ---
+name: crowdsec
 services:
-  # CrowdSec - Open-source & collaborative security IPS
   crowdsec:
     image: crowdsecurity/crowdsec:v1.7.6
     container_name: crowdsec
@@ -8,8 +8,10 @@ services:
       - no-new-privileges:true
     profiles: ["prod", "dmz"]
     environment:
-      GID: ${PGID-1000}
-      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux fulljackz/proxmox crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules"
+      - GID=${PGID-1000}
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/linux fulljackz/proxmox crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
+      - PARSERS=crowdsecurity/geoip-enrich
+      - MAXMIND_LICENSE_KEY_FILE=${MAXMIND_LICENSE_KEY_FILE:-/run/secrets/crowdsec_maxmind_license_key}
     networks:
       - traefik
     volumes:
@@ -18,6 +20,8 @@ services:
       - crowdsec-config:/etc/crowdsec/
       - crowdsec-data:/var/lib/crowdsec/data
       - traefik-logs:/var/log/traefik/:ro
+    secrets:
+      - crowdsec_maxmind_license_key
     restart: always
     depends_on: # Remove if not running traefik in the same stack
       - traefik

@@ -23,6 +23,8 @@ secrets:
     file: ./secrets/cf_dns_api_token
   crowdsec_lapi_key:
     file: ./secrets/crowdsec_lapi_key
+  crowdsec_maxmind_license_key:
+    file: ./secrets/crowdsec_maxmind_license_key
   cloudflared_token:
     file: ./secrets/cloudflared_token
   immich_postgres_db:

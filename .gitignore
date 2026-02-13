@@ -118,8 +118,6 @@ docker/secrets/dmz/oauth_secret
 docker/secrets/dmz/oauth_secrets
 !docker/secrets/dmz/oauth_secret.sops
 !docker/secrets/dmz/oauth_secrets.sops
-docker/secrets/dmz/pulse_agent_token
-!docker/secrets/dmz/pulse_agent_token.sops
 docker/secrets/dmz/traefik_forward_oauth
 !docker/secrets/dmz/traefik_forward_oauth.sops
 docker/secrets/prod/apprise_discord_webhook_id

@@ -39,6 +39,8 @@ secrets:
     file: ./secrets/cf_dns_api_token
   crowdsec_lapi_key:
     file: ./secrets/crowdsec_lapi_key
+  crowdsec_maxmind_license_key:
+    file: ./secrets/crowdsec_maxmind_license_key
   speedtest_tracker_app_key:
     file: ./secrets/speedtest_tracker_app_key
   gmail_smtp_username:
@@ -86,6 +88,7 @@ include:
   - services/node-exporter/compose.yaml
   - services/cadvisor/compose.yaml
   - services/grafana/compose.yaml
+  - services/graphite-exporter/compose.yaml
   # MISC
   - services/speedtest-tracker/compose.yaml
   - services/whoami/compose.yaml

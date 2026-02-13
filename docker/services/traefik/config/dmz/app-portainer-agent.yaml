@@ -5,6 +5,8 @@ tcp:
         - portainer-tcp
       rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
       service: portainer-agent
+      middlewares:
+        - private-ips-tcp@file
       tls:
         passthrough: true
   services:

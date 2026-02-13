@@ -5,6 +5,8 @@ tcp:
         - komodo-tcp
       rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
       service: komodo-periphery
+      middlewares:
+        - private-ips-tcp@file
       tls:
         passthrough: true
   services:

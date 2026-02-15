@@ -23,7 +23,7 @@ services:
       - traefik.http.routers.prometheus.middlewares=chain-authentik@file
 
   alertmanager:
-    image: prom/alertmanager:v0.31.0
+    image: prom/alertmanager:v0.31.1
     container_name: alertmanager
     profiles: ["prod"]
     security_opt:

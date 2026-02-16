@@ -1,0 +1,26 @@
+tcp:
+  routers:
+    graphite-exporter:
+      entryPoints:
+        - graphite-tcp
+      rule: "HostSNI(`*`)"
+      service: graphite-exporter
+      middlewares:
+        - private-ips-tcp@file
+  services:
+    graphite-exporter:
+      loadBalancer:
+        servers:
+          - address: graphite-exporter:9109
+
+udp:
+  routers:
+    graphite-exporter:
+      entryPoints:
+        - graphite-udp
+      service: graphite-exporter
+  services:
+    graphite-exporter:
+      loadBalancer:
+        servers:
+          - address: graphite-exporter:9109

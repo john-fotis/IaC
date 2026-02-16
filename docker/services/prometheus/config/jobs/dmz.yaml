@@ -17,14 +17,14 @@
     __scheme__: https
     __metrics_path__: /node-exporter/metrics
 
-- targets: ["metrics.integraceion.com"]
-  labels:
-    instance: phobos
-    job: cadvisor
-    env: dmz
-    host_type: vm
-    __scheme__: https
-    __metrics_path__: /cadvisor/metrics
+# - targets: ["metrics.integraceion.com"]
+#   labels:
+#     instance: phobos
+#     job: cadvisor
+#     env: dmz
+#     host_type: vm
+#     __scheme__: https
+#     __metrics_path__: /cadvisor/metrics
 
 - targets: ["metrics.integraceion.com"]
   labels:

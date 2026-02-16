@@ -37,14 +37,23 @@ scrape_configs:
           env: prod
           host_type: lxc
 
-  - job_name: "cAdvisor"
+  - job_name: "Graphite Exporter"
     static_configs:
-      - targets: ["cadvisor:8080"]
+      - targets: ["graphite-exporter:9108"]
         labels:
           instance: athena
-          job: cadvisor
+          job: graphite-exporter
           env: prod
           host_type: lxc
+
+  # - job_name: "cAdvisor"
+  #   static_configs:
+  #     - targets: ["cadvisor:8080"]
+  #       labels:
+  #         instance: athena
+  #         job: cadvisor
+  #         env: prod
+  #         host_type: lxc
 
   # Catch-all for external jobs via file_sd
   - job_name: "File SD Jobs"

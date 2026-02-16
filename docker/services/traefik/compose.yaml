@@ -5,11 +5,15 @@ services:
     container_name: traefik
     restart: unless-stopped
     ports:
-      - 80:80
-      - 443:443
-      - 465:465   # SMTP over SSL
-      - 8120:8120 # Komodo Periphery TCP
-      - 9001:9001 # Portainer Agent TCP
+      - 80:80/tcp
+      - 443:443/tcp
+      - 465:465/tcp   # SMTP over SSL
+      - 8090:8090/tcp # Beszel Agent TCP
+      - 8120:8120/tcp # Komodo Periphery TCP
+      - 9001:9001/tcp # Portainer Agent TCP
+      - 9108:9108/tcp # Graphite Exporter HTTP
+      - 9109:9109/tcp # Graphite Exporter TCP
+      - 9109:9109/udp # Graphite Exporter UDP
     profiles: ["prod", "dmz"]
     environment:
       - TZ=${TZ}

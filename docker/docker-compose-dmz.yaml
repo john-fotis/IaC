@@ -19,6 +19,10 @@ secrets:
     file: ./secrets/authentik_proxy_token
   basic_auth_credentials:
     file: ./secrets/basic_auth_credentials
+  beszel_key:
+    file: ./secrets/beszel_key
+  beszel_token:
+    file: ./secrets/beszel_token
   cf_dns_api_token:
     file: ./secrets/cf_dns_api_token
   crowdsec_lapi_key:
@@ -67,8 +71,9 @@ include:
   - services/komodo/compose.yaml
   - services/portainer/compose.yaml
   # MONITORING
+  - services/beszel/compose.yaml
   - services/node-exporter/compose.yaml
-  - services/cadvisor/compose.yaml
+  # - services/cadvisor/compose.yaml
   # SECURITY & AUTHENTICATION
   - services/crowdsec/compose.yaml
   # MEDIA

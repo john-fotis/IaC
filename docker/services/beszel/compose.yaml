@@ -1,0 +1,67 @@
+services:
+  beszel:
+    image: henrygd/beszel:alpine
+    container_name: beszel
+    security_opt:
+      - no-new-privileges:true
+    profiles: ["prod"]
+    environment:
+      - APP_URL=https://beszel.${FQDN}
+      - USER_CREATION=true
+      - DISABLE_PASSWORD_AUTH=true
+    networks:
+      - traefik
+    volumes:
+      - beszel-data:/beszel_data
+      - beszel-socket:/beszel_socket
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/beszel", "health", "--url", "http://localhost:8090"]
+      start_period: 5s
+      interval: 120s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.beszel.rule=Host(`beszel.${FQDN}`)
+      - traefik.http.routers.beszel.entrypoints=websecure
+      - traefik.http.routers.beszel.tls=true
+      - traefik.http.services.beszel.loadbalancer.server.port=8090
+      - traefik.http.routers.beszel.middlewares=chain-no-auth@file
+
+  beszel-agent:
+    image: henrygd/beszel-agent:alpine
+    container_name: beszel-agent
+    security_opt:
+      - no-new-privileges:true
+    profiles: ["prod", "dmz"]
+    environment:
+      - DOCKER_HOST=${DOCKER_HOST}
+      - HUB_URL=${BESZEL_HUB_URL:-https://beszel.${FQDN}}
+      - KEY_FILE=${BESZEL_KEY_FILE:-/run/secrets/beszel_key}
+      - TOKEN_FILE=${BESZEL_TOKEN_FILE:-/run/secrets/beszel_token}
+    networks:
+      - traefik
+      - socket_proxy
+    volumes:
+      - beszel-agent-data:/var/lib/beszel-agent
+      - beszel-socket:/beszel_socket
+      - /:/host:ro
+      - /sys:/sys:ro
+      - /proc:/proc:ro
+    secrets:
+      - beszel_key
+      - beszel_token
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/agent", "health"]
+      interval: 120s
+
+volumes:
+  beszel-data:
+    name: beszel-data
+    driver: local
+  beszel-socket:
+    name: beszel-socket
+    driver: local
+  beszel-agent-data:
+    name: beszel-agent-data
+    driver: local

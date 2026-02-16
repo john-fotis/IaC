@@ -1,0 +1,16 @@
+tcp:
+  routers:
+    beszel-agent:
+      entryPoints:
+        - beszel-tcp
+      rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
+      service: beszel-agent
+      middlewares:
+        - private-ips-tcp@file
+      tls:
+        passthrough: true
+  services:
+    beszel-agent:
+      loadBalancer:
+        servers:
+          - address: beszel-agent:45876

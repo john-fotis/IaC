@@ -80,6 +80,10 @@ docker/secrets/dmz/authentik_proxy_token
 !docker/secrets/dmz/authentik_proxy_token.sops
 docker/secrets/dmz/basic_auth_credentials
 !docker/secrets/dmz/basic_auth_credentials.sops
+docker/secrets/dmz/beszel_key
+!docker/secrets/dmz/beszel_key.sops
+docker/secrets/dmz/beszel_token
+!docker/secrets/dmz/beszel_token.sops
 docker/secrets/dmz/cf_dns_api_token
 !docker/secrets/dmz/cf_dns_api_token.sops
 docker/secrets/dmz/cloudflared_token
@@ -140,6 +144,10 @@ docker/secrets/prod/authentik_secret_key
 !docker/secrets/prod/authentik_secret_key.sops
 docker/secrets/prod/basic_auth_credentials
 !docker/secrets/prod/basic_auth_credentials.sops
+docker/secrets/prod/beszel_key
+!docker/secrets/prod/beszel_key.sops
+docker/secrets/prod/beszel_token
+!docker/secrets/prod/beszel_token.sops
 docker/secrets/prod/cf_dns_api_token
 !docker/secrets/prod/cf_dns_api_token.sops
 docker/secrets/prod/crowdsec_lapi_key

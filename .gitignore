@@ -68,6 +68,8 @@ ansible/ansible.cfg
 !ansible/ansible.cfg.sops
 ansible/inventories/group_vars/all.yml
 !ansible/inventories/group_vars/all.yml.sops
+ansible/inventories/group_vars/docker.yml
+!ansible/inventories/group_vars/docker.yml.sops
 ansible/inventories/hosts.ini
 !ansible/inventories/hosts.ini.sops
 docker/.env.dmz

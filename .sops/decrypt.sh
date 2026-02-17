@@ -15,7 +15,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Find all .sops files and decrypt them
-find "$ROOT_DIR" -type f -name "*.sops" | while IFS= read -r file; do
+find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) | while IFS= read -r file; do
     # Convert absolute paths to relative paths and prepare decrypted filenames
     relative_file="${file#$ROOT_DIR/}"
     decrypted_file="${relative_file/.sops/}"
@@ -23,9 +23,11 @@ find "$ROOT_DIR" -type f -name "*.sops" | while IFS= read -r file; do
     if [ -f "$ROOT_DIR/$decrypted_file" ]; then
         # File exists, decrypt and compare
         decrypted_temp=$(mktemp) || { echo "Failed to create temporary file"; exit 1; }
-        if ! sops --decrypt "$file" >"$decrypted_temp"; then
-            echo -e "${RED}Failed to decrypt file: $relative_file${NC}"
-            continue
+        if ! sops --decrypt "$file" >"$decrypted_temp" 2>/dev/null; then
+            if ! sops --decrypt --input-type binary --output-type binary "$file" >"$decrypted_temp" 2>/dev/null; then
+                echo -e "${RED}Failed to decrypt file: $relative_file${NC}"
+                continue
+            fi
         fi
         # Compare the decrypted content with the existing file
         if cmp -s "$ROOT_DIR/$decrypted_file" "$decrypted_temp"; then
@@ -38,8 +40,10 @@ find "$ROOT_DIR" -type f -name "*.sops" | while IFS= read -r file; do
     else
         # File doesn't exist, decrypt and create it
         echo -e "${RED}Decrypting file: $relative_file${NC}"
-        if ! sops --decrypt "$file" >"$ROOT_DIR/$decrypted_file"; then
-            echo -e "${RED}Failed to decrypt file: $relative_file${NC}"
+        if ! sops --decrypt "$file" >"$ROOT_DIR/$decrypted_file" 2>/dev/null; then
+            if ! sops --decrypt --input-type binary --output-type binary "$file" >"$ROOT_DIR/$decrypted_file"; then
+                echo -e "${RED}Failed to decrypt file: $relative_file${NC}"
+            fi
         fi
     fi
 done

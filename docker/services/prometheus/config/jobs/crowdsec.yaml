@@ -1,3 +1,4 @@
+---
 - targets: ["crowdsec:6060"]
   labels:
     instance: athena

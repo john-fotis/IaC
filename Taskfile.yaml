@@ -1,3 +1,4 @@
+---
 version: "3"
 
 tasks:
@@ -9,6 +10,7 @@ tasks:
     desc: Run pre-commit tasks
     silent: true
     cmds:
+      - task yamllint
       - task encrypt
       - task gitignore-update
 
@@ -39,3 +41,9 @@ tasks:
     desc: Remove the auto-ignored SOPS secrets section from .gitignore
     silent: true
     cmd: bash {{.ROOT_DIR}}/.sops/gitignore-clean.sh
+
+  yamllint:
+    desc: Lint all YAML files
+    silent: true
+    run: once
+    cmd: find . -type f \( -name "*.yaml" -o -name "*.yml" \) -exec yamllint -c .yamllint {} +

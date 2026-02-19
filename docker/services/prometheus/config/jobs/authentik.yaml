@@ -1,3 +1,4 @@
+---
 - targets: ["authentik-server:9300"]
   labels:
     instance: athena

@@ -1,3 +1,4 @@
+---
 services:
   portainer:
     image: portainer/portainer-ee:2.38.1-alpine

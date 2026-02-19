@@ -53,6 +53,6 @@ networks:
     driver: bridge
 
 volumes:
-	postgres-data:
-		name: postgres-data
-		driver: local
+  postgres-data:
+    name: postgres-data
+    driver: local

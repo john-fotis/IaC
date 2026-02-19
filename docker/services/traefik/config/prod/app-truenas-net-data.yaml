@@ -1,7 +1,8 @@
+---
 http:
   routers:
     truenas-net-data:
-      rule: "Host(`truenas-net-data.{{env "DOMAIN"}}`)"
+      rule: Host(`truenas-net-data.{{env "DOMAIN"}}`)
       entryPoints:
         - websecure
       middlewares:

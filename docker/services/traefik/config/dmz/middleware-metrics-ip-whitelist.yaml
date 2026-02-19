@@ -1,3 +1,4 @@
+---
 http:
   middlewares:
     metrics-ip-whitelist:

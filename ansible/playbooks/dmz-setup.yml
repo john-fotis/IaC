@@ -1,5 +1,4 @@
 ---
-
 - name: Install Docker on DMZ hosts
   hosts: dmz
   gather_facts: true

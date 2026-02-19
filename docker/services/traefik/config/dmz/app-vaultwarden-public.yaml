@@ -1,3 +1,4 @@
+---
 http:
   routers:
     # Serve vaultwarden regular paths

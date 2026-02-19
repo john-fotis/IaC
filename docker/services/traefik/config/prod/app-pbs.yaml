@@ -1,7 +1,8 @@
+---
 http:
   routers:
     pbs:
-      rule: "Host(`pbs.{{env "DOMAIN"}}`)"
+      rule: Host(`pbs.{{env "DOMAIN"}}`)
       entryPoints:
         - websecure
       middlewares:

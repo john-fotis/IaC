@@ -1,9 +1,10 @@
+---
 tcp:
   routers:
     portainer-agent:
       entryPoints:
         - portainer-tcp
-      rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
+      rule: HostSNI(`phobos.{{env "DOMAIN"}}`)
       service: portainer-agent
       middlewares:
         - private-ips-tcp@file

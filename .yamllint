@@ -1,7 +1,31 @@
 ---
 extends: default
 
+ignore:
+  - "*.sops*"
+
+# Global rules
 rules:
-	line-length:
-		max: 160
-		level: warning
+  brackets:
+    max-spaces-inside: 1
+  colons:
+    max-spaces-before: 1
+  comments: disable
+  comments-indentation: disable
+  document-start: disable
+  indentation:
+    spaces: 2
+  line-length:
+    max: 120
+    allow-non-breakable-inline-mappings: true
+    level: warning
+  truthy: disable
+
+# Per-file overrides
+overrides:
+  - files:
+      - "docker/services/authentik/compose.yaml"
+      - "docker/services/crowdsec/compose.yaml"
+      - "docker/services/nextcloud/compose.yaml"
+    rules:
+      line-length: disable

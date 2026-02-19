@@ -1,3 +1,4 @@
+---
 name: grafana
 services:
   grafana:

@@ -1,3 +1,4 @@
+---
 services:
   whoami:
     image: ghcr.io/traefik/whoami:v1.11

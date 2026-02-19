@@ -1,3 +1,4 @@
+---
 # DMZ Stack - Metrics scraped via HTTPS published endpoints
 - targets: ["traefik.integraceion.com"]
   labels:

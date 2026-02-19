@@ -18,7 +18,7 @@
   ansible.builtin.file:
     path: "{{ mount_point }}"
     state: directory
-    mode: '0777'
+    mode: "0777"
   when: not mount_point_stat.stat.exists
 
 - name: Mount NFS share

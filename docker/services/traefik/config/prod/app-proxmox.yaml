@@ -1,7 +1,8 @@
+---
 http:
   routers:
     proxmox:
-      rule: "Host(`proxmox.{{env "DOMAIN"}}`)"
+      rule: Host(`proxmox.{{env "DOMAIN"}}`)
       entryPoints:
         - websecure
       middlewares:

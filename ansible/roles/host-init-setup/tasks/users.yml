@@ -1,3 +1,4 @@
+---
 - name: Create {{ sudo_user }} if not exists
   ansible.builtin.user:
     name: "{{ sudo_user }}"
@@ -8,7 +9,6 @@
   register: sudo_user_exists
 
 - block:
-
     - name: Configure passwordless sudo for {{ sudo_user }}
       ansible.builtin.copy:
         dest: "/etc/sudoers.d/{{ sudo_user }}"
@@ -36,8 +36,17 @@
 - name: Create ansible if not exists
   ansible.builtin.user:
     name: "ansible"
+    groups: sudo
     shell: /bin/bash
     create_home: yes
+
+- name: Configure passwordless sudo for ansible user
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/ansible"
+    content: "ansible ALL=(ALL) NOPASSWD:ALL"
+    mode: "0440"
+    owner: root
+    group: root
 
 - name: Ensure SSH key directory exists for ansible
   ansible.posix.authorized_key:

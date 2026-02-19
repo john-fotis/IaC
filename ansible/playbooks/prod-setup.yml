@@ -1,5 +1,4 @@
 ---
-
 - name: Install Docker on PROD hosts
   hosts: prod
   gather_facts: true

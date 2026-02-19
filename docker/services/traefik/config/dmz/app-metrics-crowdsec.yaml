@@ -1,7 +1,8 @@
+---
 http:
   routers:
     metrics-crowdsec:
-      rule: Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/crowdsec`)
+      rule: 'Host(`metrics.{{env "DOMAIN"}}`) && PathPrefix(`/crowdsec`)'
       entryPoints:
         - websecure
       middlewares:

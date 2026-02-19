@@ -1,7 +1,8 @@
+---
 http:
   routers:
     pulse:
-      rule: "Host(`pulse.{{env "DOMAIN"}}`)"
+      rule: Host(`pulse.{{env "DOMAIN"}}`)
       entryPoints:
         - websecure
       middlewares:

@@ -1,9 +1,10 @@
+---
 tcp:
   routers:
     beszel-agent:
       entryPoints:
         - beszel-tcp
-      rule: "HostSNI(`phobos.{{env "DOMAIN"}}`)"
+      rule: HostSNI(`phobos.{{env "DOMAIN"}}`)
       service: beszel-agent
       middlewares:
         - private-ips-tcp@file

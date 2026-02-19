@@ -3,18 +3,21 @@
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Add Docker GPG key
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
     dest: /etc/apt/keyrings/docker.gpg
-    mode: '0644'
+    mode: "0644"
 
 - name: Map Ansible architecture to Debian name
   ansible.builtin.set_fact:
     repo_arch: >-
-      {{ 'amd64' if ansible_architecture == 'x86_64' else ('arm64' if ansible_architecture == 'aarch64' else ansible_architecture) }}
+      {{
+        'amd64' if ansible_architecture == 'x86_64' else
+        ('arm64' if ansible_architecture == 'aarch64' else ansible_architecture)
+      }}
 
 - name: Check if Docker APT repository file exists
   ansible.builtin.stat:
@@ -23,7 +26,9 @@
 
 - name: Add Docker APT repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch={{ repo_arch }} signed-by=/usr/share/keyrings/docker-archive-keyring.asc] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename | lower }} stable"
+    repo: >-
+      deb [arch={{ repo_arch }} signed-by=/usr/share/keyrings/docker-archive-keyring.asc]
+      https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename | lower }} stable
     filename: docker
     state: present
     update_cache: yes
@@ -39,9 +44,9 @@
   ansible.builtin.template:
     src: "templates/docker_daemon.json.j2"
     dest: "/etc/docker/daemon.json"
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+    owner: "root"
+    group: "root"
+    mode: "0755"
   notify: Restart Docker
 
 - name: Ensure Docker service is enabled and running
@@ -56,4 +61,3 @@
     groups: docker
     append: true
   when: ansible_user != 'root'
-

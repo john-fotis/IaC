@@ -1,3 +1,4 @@
+---
 - targets: ["traefik:8080"]
   labels:
     instance: athena

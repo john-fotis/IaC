@@ -66,6 +66,8 @@ vars.pkrvars.hcl
 ######## Auto-ignored SOPS Secrets ########
 ansible/ansible.cfg
 !ansible/ansible.cfg.sops
+ansible/inventories/docker.ini
+!ansible/inventories/docker.ini.sops
 ansible/inventories/group_vars/all.yml
 !ansible/inventories/group_vars/all.yml.sops
 ansible/inventories/group_vars/docker.yml

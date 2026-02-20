@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parse arguments
+VERBOSE=false
+for arg in "$@"; do
+    case $arg in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+        ;;
+    esac
+done
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GITIGNORE="$ROOT_DIR/.gitignore"
 START_MARKER="######## Auto-ignored SOPS Secrets ########"
@@ -15,4 +26,4 @@ fi
 sed -i "/$START_MARKER/,/$END_MARKER/d" "$GITIGNORE"
 sed -i -e ':a' -e 'N' -e '$!ba' -e "s/\n$START_MARKER/ $START_MARKER/" "$GITIGNORE"
 sed -i "/$START_MARKER/,/$END_MARKER/d" "$GITIGNORE"
-echo ".gitignore auto-ignored SOPS section has been removed."
+[[ $VERBOSE == true ]] && echo -e ".gitignore auto-ignored SOPS section has been removed." || true

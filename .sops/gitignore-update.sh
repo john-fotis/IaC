@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parse arguments
+VERBOSE=false
+for arg in "$@"; do
+    case $arg in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+        ;;
+    esac
+done
+
 # Set ROOT_DIR as the parent directory of .sops folder
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG_FILE="$ROOT_DIR/.sops/config.txt"
@@ -38,4 +49,4 @@ xargs -a "$CONFIG_FILE" -I {} bash -c 'git ls-files --error-unmatch "$1" >/dev/n
 
 # Stage the updated .gitignore
 git add "$ROOT_DIR/.gitignore"
-echo ".gitignore has been updated and staged."
+[[ $VERBOSE == true ]] && echo -e ".gitignore has been updated and staged." || true

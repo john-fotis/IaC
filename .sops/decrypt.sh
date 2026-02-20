@@ -5,6 +5,17 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Parse arguments
+VERBOSE=false
+for arg in "$@"; do
+    case $arg in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+        ;;
+    esac
+done
+
 # Set ROOT_DIR as the parent directory of .sops folder
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -14,9 +25,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Find all .sops files and decrypt them
-find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) | while IFS= read -r file; do
-    # Convert absolute paths to relative paths and prepare decrypted filenames
+# Find all .sops files and decrypt them (excluding ".sops.yaml")
+find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) ! -path "$ROOT_DIR/.sops.yaml" | while IFS= read -r file; do    # Convert absolute paths to relative paths and prepare decrypted filenames
     relative_file="${file#$ROOT_DIR/}"
     decrypted_file="${relative_file/.sops/}"
 
@@ -31,7 +41,7 @@ find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) | while IFS= r
         fi
         # Compare the decrypted content with the existing file
         if cmp -s "$ROOT_DIR/$decrypted_file" "$decrypted_temp"; then
-            echo -e "${GREEN}No changes detected in $relative_file. Skipping decryption...${NC}"
+            [[ $VERBOSE == true ]] && echo -e "${GREEN}Skipping decryption of '$relative_file.'${NC}" || true
         else
             # Replace existing file with decrypted content
             mv "$decrypted_temp" "$ROOT_DIR/$decrypted_file"
@@ -47,3 +57,5 @@ find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) | while IFS= r
         fi
     fi
 done
+
+echo -e "${GREEN}Encryption process completed.${NC}"

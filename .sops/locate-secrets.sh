@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parse arguments
+VERBOSE=false
+for arg in "$@"; do
+    case $arg in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+        ;;
+    esac
+done
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT_FILE="$ROOT_DIR/.sops/config.txt"
 
@@ -38,4 +49,4 @@ sort -u "$OUTPUT_FILE" -o "$OUTPUT_FILE"
 # Cleanup
 sed -i 's|^\./||' "$OUTPUT_FILE"
 
-echo "Secrets located and filtered in $OUTPUT_FILE"
+[[ $VERBOSE == true ]] && echo -e "Secrets located and filtered in $OUTPUT_FILE" || true

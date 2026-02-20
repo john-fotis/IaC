@@ -5,6 +5,17 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Parse arguments
+VERBOSE=false
+for arg in "$@"; do
+    case $arg in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+        ;;
+    esac
+done
+
 # Set ROOT_DIR as the parent directory of .sops folder
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INPUT_FILE="${ROOT_DIR}/.sops/config.txt"
@@ -39,8 +50,7 @@ while IFS= read -r file_path || [[ -n "$file_path" ]]; do
         if sops --decrypt "$encrypted_file" >"$decrypted_temp" 2>/dev/null || \
            sops --decrypt --input-type binary --output-type binary "$encrypted_file" >"$decrypted_temp" 2>/dev/null; then
             if cmp -s "$FULL_SRC_PATH" "$decrypted_temp"; then
-                echo -e "${GREEN}No changes detected in ${file_path}. Skipping...${NC}"
-                rm "$decrypted_temp"
+                [[ $VERBOSE == true ]] && echo -e "${GREEN}Skipping encryption of '${file_path}'.${NC}" || true
                 continue
             fi
         fi

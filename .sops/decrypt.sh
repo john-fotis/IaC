@@ -26,7 +26,8 @@ cleanup() {
 trap cleanup EXIT
 
 # Find all .sops files and decrypt them (excluding ".sops.yaml")
-find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) ! -path "$ROOT_DIR/.sops.yaml" | while IFS= read -r file; do    # Convert absolute paths to relative paths and prepare decrypted filenames
+find "$ROOT_DIR" -type f \( -name "*.sops" -o -name "*.sops.*" \) ! -path "$ROOT_DIR/.sops.yaml" | while IFS= read -r file; do
+    # Convert absolute paths to relative paths and prepare decrypted filenames
     relative_file="${file#$ROOT_DIR/}"
     decrypted_file="${relative_file/.sops/}"
 

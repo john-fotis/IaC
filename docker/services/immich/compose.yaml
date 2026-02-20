@@ -91,6 +91,8 @@ services:
     image: redis:alpine
     networks:
       - db
+    volumes:
+      - immich-redis:/data
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -101,6 +103,9 @@ networks:
 volumes:
   immich-db:
     name: immich-db
+    driver: local
+  immich-redis:
+    name: immich-redis
     driver: local
   model-cache:
     name: immich-model-cache

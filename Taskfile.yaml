@@ -1,6 +1,9 @@
 ---
 version: "3"
 
+vars:
+  VERBOSE: false
+
 tasks:
   default:
     silent: true
@@ -18,29 +21,29 @@ tasks:
     desc: Locate all sensitive files and generate config.txt
     run: once
     silent: true
-    cmd: bash {{.ROOT_DIR}}/.sops/locate-secrets.sh
+    cmd: bash {{.ROOT_DIR}}/.sops/locate-secrets.sh {{if .VERBOSE}}-v{{end}}
 
   encrypt:
     desc: Encrypt all sops files in this repository.
     run: once
     deps: [prepare-sops]
-    cmd: bash {{.ROOT_DIR}}/.sops/encrypt.sh
+    cmd: bash {{.ROOT_DIR}}/.sops/encrypt.sh {{if .VERBOSE}}-v{{end}}
 
   decrypt:
     desc: Decrypt all sops files in this repository.
     run: once
-    cmd: bash {{.ROOT_DIR}}/.sops/decrypt.sh
+    cmd: bash {{.ROOT_DIR}}/.sops/decrypt.sh {{if .VERBOSE}}-v{{end}}
 
   gitignore-update:
     desc: Add decrypted files to .gitignore to avoid accidental commits
     silent: true
     run: once
-    cmd: bash {{.ROOT_DIR}}/.sops/gitignore-update.sh
+    cmd: bash {{.ROOT_DIR}}/.sops/gitignore-update.sh {{if .VERBOSE}}-v{{end}}
 
   gitignore-clean:
     desc: Remove the auto-ignored SOPS secrets section from .gitignore
     silent: true
-    cmd: bash {{.ROOT_DIR}}/.sops/gitignore-clean.sh
+    cmd: bash {{.ROOT_DIR}}/.sops/gitignore-clean.sh {{if .VERBOSE}}-v{{end}}
 
   yamllint:
     desc: Lint all YAML files

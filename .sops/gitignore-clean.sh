@@ -4,11 +4,8 @@ set -euo pipefail
 # Parse arguments
 VERBOSE=false
 for arg in "$@"; do
-    case $arg in
-        -v|--verbose)
-            VERBOSE=true
-            shift
-        ;;
+    case "$arg" in
+        -v|--verbose) VERBOSE=true ;;
     esac
 done
 

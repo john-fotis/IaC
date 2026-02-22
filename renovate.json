@@ -31,41 +31,43 @@
         "patch",
         "digest"
       ],
-      "groupName": "Weekly Docker Minor & Patch Updates",
-      "excludePackageNames": [
-        "postgres"
-      ]
-    },
-    {
-      "description": "Disable Postgres major updates",
       "matchPackageNames": [
-        "postgres"
+        "!/postgres/",
+        "!/redis/"
       ],
-      "matchDatasources": [
-        "docker"
-      ],
-      "separateMajorMinor": true,
-      "major": {
-        "enabled": false
-      }
+      "groupName": "Weekly Docker Minor & Patch Updates"
     },
     {
-      "description": "Enable digest pinning for ANY image using the 'latest' tag",
-      "matchDatasources": [
-        "docker"
+      "description": "Silence DB noise (No minor/patch PRs for DBs)",
+      "matchPackageNames": [
+        "/postgres/",
+        "/redis/"
       ],
-      "matchCurrentValue": "latest",
-      "pinDigests": true
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "enabled": false
     },
     {
-      "description": "Open individual PRs for Major updates (non-db)",
+      "description": "Standalone PRs for Major updates (Apps & DBs)",
       "matchUpdateTypes": [
         "major"
       ],
-      "excludePackageNames": [
-        "postgres"
+      "groupName": null,
+      "enabled": true
+    },
+    {
+      "description": "Enable digest pinning for ALL non-DB images",
+      "matchDatasources": [
+        "docker"
       ],
-      "groupName": null
+      "matchPackageNames": [
+        "!/postgres/",
+        "!/redis/"
+      ],
+      "pinDigests": true
     }
   ]
 }

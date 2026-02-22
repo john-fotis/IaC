@@ -14,6 +14,7 @@
   ],
   "dependencyDashboard": true,
   "minimumReleaseAge": "3 days",
+  "pinDigests": false,
   "enabledManagers": [
     "docker-compose"
   ],
@@ -22,7 +23,7 @@
   ],
   "packageRules": [
     {
-      "description": "Group Docker minor, patch, and digest updates",
+      "description": "Group minor/patch/digest for all non-DB images into one weekly PR",
       "matchDatasources": [
         "docker"
       ],
@@ -32,16 +33,19 @@
         "digest"
       ],
       "matchPackageNames": [
-        "!/postgres/",
-        "!/redis/"
+        "!/^postgres$/",
+        "!/^redis$/"
       ],
       "groupName": "Weekly Docker Minor & Patch Updates"
     },
     {
-      "description": "Silence DB noise (No minor/patch PRs for DBs)",
+      "description": "Disable minor/patch/digest for DB images - require manual migration",
+      "matchDatasources": [
+        "docker"
+      ],
       "matchPackageNames": [
-        "/postgres/",
-        "/redis/"
+        "/^postgres$/",
+        "/^redis$/"
       ],
       "matchUpdateTypes": [
         "minor",
@@ -51,7 +55,14 @@
       "enabled": false
     },
     {
-      "description": "Standalone PRs for Major updates (Apps & DBs)",
+      "description": "Major DB updates get individual PRs",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "/^postgres$/",
+        "/^redis$/"
+      ],
       "matchUpdateTypes": [
         "major"
       ],
@@ -59,15 +70,31 @@
       "enabled": true
     },
     {
-      "description": "Enable digest pinning for ALL non-DB images",
+      "description": "Disable image pinning",
+      "matchUpdateTypes": [
+        "pin"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Pin digests only for latest-tagged images",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchCurrentValue": "latest",
+      "pinDigests": true
+    },
+    {
+      "description": "Skip release age check for registries that don't report timestamps",
       "matchDatasources": [
         "docker"
       ],
       "matchPackageNames": [
-        "!/postgres/",
-        "!/redis/"
+        "/^ghcr\\.io/",
+        "/^gcr\\.io/",
+        "/^lscr\\.io/"
       ],
-      "pinDigests": true
+      "minimumReleaseAge": "0 days"
     }
   ]
 }

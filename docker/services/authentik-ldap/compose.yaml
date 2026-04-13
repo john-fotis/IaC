@@ -1,7 +1,7 @@
 ---
 services:
   authentik-ldap:
-    image: ghcr.io/goauthentik/ldap:2026.2.1
+    image: ghcr.io/goauthentik/ldap:2026.2.2
     container_name: authentik-ldap
     security_opt:
       - no-new-privileges:true

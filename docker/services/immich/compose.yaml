@@ -2,7 +2,7 @@
 services:
   immich-server:
     container_name: immich
-    image: ghcr.io/immich-app/immich-server:v2.6.1
+    image: ghcr.io/immich-app/immich-server:v2.7.5
     profiles: ["dmz"]
     environment:
       # - IMMICH_LOG_LEVEL=verbose
@@ -38,7 +38,7 @@ services:
 
   immich-machine-learning:
     container_name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:v2.6.1
+    image: ghcr.io/immich-app/immich-machine-learning:v2.7.5
     profiles: ["dmz"]
     security_opt:
       - no-new-privileges:true

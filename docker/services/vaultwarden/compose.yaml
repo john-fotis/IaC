@@ -1,7 +1,7 @@
 ---
 services:
   vaultwarden:
-    image: vaultwarden/server:1.35.4
+    image: vaultwarden/server:1.35.8
     container_name: vaultwarden
     profiles: ["prod"]
     environment:

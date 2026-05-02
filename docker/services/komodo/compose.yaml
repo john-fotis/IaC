@@ -65,7 +65,7 @@ services:
       - komodo.skip=true
 
   periphery:
-    image: ghcr.io/moghtech/komodo-periphery:1.19.5
+    image: ghcr.io/moghtech/komodo-periphery:2.1.2
     container_name: komodo-periphery
     profiles: ["prod", "dmz"]
     environment:

@@ -1,7 +1,7 @@
 ---
 services:
   vaultwarden:
-    image: vaultwarden/server:1.35.8
+    image: vaultwarden/server:1.36.0
     container_name: vaultwarden
     profiles: ["prod"]
     environment:
@@ -22,7 +22,7 @@ services:
       - traefik.http.routers.vaultwarden.middlewares=chain-no-auth@file
 
   vw-backup:
-    image: ttionya/vaultwarden-backup:1.26.6
+    image: ttionya/vaultwarden-backup:1.26.8
     container_name: vw-backup
     profiles: ["prod"]
     environment:

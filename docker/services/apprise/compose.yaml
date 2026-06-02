@@ -1,7 +1,7 @@
 ---
 services:
   apprise:
-    image: lscr.io/linuxserver/apprise-api:1.4.1
+    image: lscr.io/linuxserver/apprise-api:1.5.0
     container_name: apprise
     profiles: ["prod"]
     environment:

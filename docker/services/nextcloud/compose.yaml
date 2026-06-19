@@ -2,7 +2,7 @@
 ---
 services:
   nextcloud:
-    image: linuxserver/nextcloud:33.0.4
+    image: linuxserver/nextcloud:33.0.5
     container_name: nextcloud
     profiles: ["dmz"]
     networks:

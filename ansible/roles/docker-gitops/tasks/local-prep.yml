@@ -1,0 +1,78 @@
+---
+# roles/docker-gitops/tasks/local-prep.yml
+
+- name: Include pre-deployment validation tasks
+  ansible.builtin.include_tasks: pre-deployment.yml
+  tags: ["always", "gitops-validate"]
+
+- name: Include Git synchronization tasks
+  ansible.builtin.include_tasks: git-sync.yml
+  tags: ["gitops-sync"]
+  when: not dry_run | default(false) | bool
+
+- name: Include dynamic target detection
+  ansible.builtin.include_tasks: detect-target-hosts.yml
+  tags: ["always", "gitops-validate"]
+  when: target_env is not defined
+
+- name: Validate deployment target
+  ansible.builtin.assert:
+    that:
+      - >
+        target_env is defined or
+        (groups['gitops_dynamic_targets'] is defined and
+        groups['gitops_dynamic_targets'] | length > 0)
+      - >
+        target_env is not defined or
+        target_env in ['prod', 'dmz']
+    fail_msg: "target_env must be either 'prod' or 'dmz', or changes must be detected via Git."
+
+- name: Secure Bastion Operations
+  block:
+    - name: Decrypt SOPS files locally
+      ansible.builtin.import_tasks: sops-decrypt.yml
+      when:
+        - not dry_run | default(false) | bool
+        - use_sops | bool
+        - sops_version is defined and sops_version.rc == 0
+
+    - name: Include Docker stack synchronization tasks (via sync.sh)
+      ansible.builtin.include_tasks: sync.yml
+      loop: "{{ [target_env] if target_env is defined else detected_profiles | default(['prod', 'dmz']) }}"
+      loop_control:
+        loop_var: compose_profile
+      tags: ["always", "gitops-sync"]
+      when: not dry_run | default(false) | bool
+
+  always:
+    - name: Clean up decrypted secrets from runner
+      when: not dry_run | default(false) | bool
+      block:
+        - name: Find decrypted .env and secret files
+          ansible.builtin.find:
+            paths: "{{ git_local_path }}"
+            patterns:
+              - ".env"
+              - ".env.*"
+              - "secrets/*"
+            excludes:
+              - "*.sops.*"
+            hidden: true
+            recurse: true
+          register: files_to_remove
+
+        - name: Remove decrypted files from local runner directory
+          ansible.builtin.file:
+            path: "{{ item.path }}"
+            state: absent
+          loop: "{{ files_to_remove.files }}"
+
+        - name: Ensure secrets are scrubbed regardless of deployment status
+          ansible.builtin.debug:
+            msg: "Secrets cleanup executed on bastion"
+          when: verbose | default(false) | bool
+
+        - name: Return git clone to a clean state
+          ansible.builtin.include_tasks: git-cleanup.yml
+          delegate_to: localhost
+          run_once: true

@@ -1,0 +1,74 @@
+---
+# roles/docker-gitops/tasks/post-deployment.yml
+
+- name: Post-Deployment Tasks
+  when: not dry_run | default(false) | bool
+  block:
+    - name: Wait for services to be healthy
+      ansible.builtin.command:
+        cmd: docker compose ps --format json
+        chdir: "{{ docker_dest_dir }}"
+      register: compose_ps_json
+      until: >
+        (compose_ps_json.stdout_lines | map('from_json') | selectattr('State', 'ne', 'running') | list | length == 0)
+        and
+        (compose_ps_json.stdout_lines | map('from_json')
+         | selectattr('Health', 'defined')
+         | rejectattr('Health', 'in', ['', 'healthy', 'none'])
+         | list | length == 0)
+      retries: "{{ (docker_health_check_timeout | int / docker_health_check_interval | int) | int }}"
+      delay: "{{ docker_health_check_interval | int }}"
+      changed_when: false
+
+    - name: Parse compose JSON output
+      ansible.builtin.set_fact:
+        compose_services: "{{ compose_ps_json.stdout_lines | map('from_json') | list }}"
+
+    - name: Determine failed and unhealthy containers
+      ansible.builtin.set_fact:
+        failed_services: >-
+          {{ compose_services
+             | rejectattr('State', 'equalto', 'running')
+             | map(attribute='Name')
+             | list }}
+        unhealthy_services: >-
+          {{ compose_services
+             | selectattr('Health', 'defined')
+             | rejectattr('Health', 'in', ['', 'healthy', 'none'])
+             | map(attribute='Name')
+             | list }}
+        problematic_services: >-
+          {{ (failed_services | default([])) + (unhealthy_services | default([])) | unique | list }}
+
+    - name: Set deployment status
+      ansible.builtin.set_fact:
+        deployment_status: "{{ 'Success' if problematic_services | length == 0 else 'Failed' }}"
+
+  rescue:
+    - name: Catch fatal verification errors
+      ansible.builtin.set_fact:
+        deployment_status: "Error"
+        problematic_services:
+          ["Fatal error occurred during health verification"]
+
+  always:
+    - name: Import Cleanup Tasks
+      ansible.builtin.include_tasks: cleanup.yml
+      when:
+        - not dry_run | default(false) | bool
+        - hostvars['localhost']['git_repo_changed'] | default(false) | bool or force_deploy | default(false) | bool
+
+    - name: Import Notification Tasks
+      ansible.builtin.include_tasks: notify.yml
+      when:
+        - enable_notifications | default(false) | bool
+        - discord_webhook_url is defined and discord_webhook_url != ""
+        - not dry_run | default(false) | bool
+
+    - name: Fail Ansible run if deployment is unhealthy
+      ansible.builtin.fail:
+        msg: >
+          Deployment FAILED on {{ inventory_hostname }}
+          Profile: {{ compose_profile }}
+          Problematic containers: {{ problematic_services | default([]) }}
+      when: deployment_status != 'Success'

@@ -1,0 +1,26 @@
+---
+# roles/docker-gitops/tasks/sops-decrypt.yml
+
+- name: Run SOPS decryption script
+  ansible.builtin.command:
+    cmd: "{{ git_local_path }}/.sops/decrypt.sh"
+    chdir: "{{ git_local_path }}"
+  register: sops_decrypt_result
+  failed_when: sops_decrypt_result.rc != 0
+  changed_when: sops_decrypt_result.stdout_lines | length > 0
+
+- name: Find .sops and .sops.* files in docker directory
+  ansible.builtin.find:
+    paths: "{{ git_local_path }}/docker"
+    patterns:
+      - ".sops"
+      - ".sops.*"
+    hidden: true
+    recurse: true
+  register: sops_files_to_remove
+
+- name: Remove .sops and .sops.* files from docker directory
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ sops_files_to_remove.files }}"

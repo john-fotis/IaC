@@ -1,0 +1,38 @@
+---
+# roles/docker-gitops/tasks/notify.yml
+
+- name: Set Discord embed color based on status
+  ansible.builtin.set_fact:
+    discord_color: >-
+      {{ 65280 if deployment_status == 'Success' else 16711680 }}
+
+- name: Send Discord Notification
+  ansible.builtin.uri:
+    url: "{{ discord_webhook_url }}"
+    method: POST
+    body_format: json
+    body:
+      content: "{{ '@admin' if deployment_status != 'Success' else '' }}"
+      embeds:
+        - title: "{{ '✅' if deployment_status == 'Success' else '❌' }} Deployment {{ deployment_status }}"
+          color: "{{ discord_color }}"
+          fields:
+            - name: "Host"
+              value: "{{ inventory_hostname }}"
+              inline: true
+            - name: "Profile"
+              value: "{{ compose_profile }}"
+              inline: true
+            - name: "{{ 'Services Deployed' if deployment_status == 'Success' else 'Problematic Services' }}"
+              value: >-
+                {{
+                  (compose_services | map(attribute='Name') | list | join(', '))
+                  if deployment_status == 'Success'
+                  else (problematic_services | default(['Unknown']) | join(', '))
+                }}
+              inline: false
+    status_code: 204
+  no_log: true
+  delegate_to: localhost
+  run_once: true
+  ignore_errors: true

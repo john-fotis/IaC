@@ -1,0 +1,258 @@
+---
+# roles/docker-gitops/tasks/deploy-stack.yml
+
+# - name: Set deployment variables
+#   ansible.builtin.set_fact:
+#     source_compose_file: "{{ git_local_path }}/docker/docker-compose-{{ compose_profile }}.yaml"
+#     source_env_file: "{{ git_local_path }}/docker/.env.{{ compose_profile }}"
+#     source_docker_dir: "{{ git_local_path }}/docker"
+#     dest_compose_file: "{{ docker_dest_dir }}/docker-compose.yaml"
+#     dest_env_file: "{{ docker_dest_dir }}/.env"
+
+# - name: Deployment tasks block
+#   when: not dry_run | default(false) | bool
+#   become: true
+#   vars:
+#     special_secret_patterns:
+#       - "^authentik_.*"
+#       - "^komodo_db_.*"
+#       - "^cloudflared_token$"
+#   block:
+#     - name: Ensure destination directory structure exists
+#       ansible.builtin.file:
+#         path: "{{ item }}"
+#         state: directory
+#         mode: "0755"
+#         owner: ansible
+#         group: ansible
+#       loop:
+#         - "{{ docker_dest_dir }}"
+#         - "{{ docker_dest_dir }}/secrets"
+#         - "{{ docker_dest_dir }}/services"
+#         - "{{ docker_dest_dir }}/services/traefik/config"
+#         - "{{ docker_dest_dir }}/services/socket-proxy"
+
+#     - name: Sync {{ compose_profile }} docker-compose file
+#       ansible.posix.synchronize:
+#         src: "{{ source_compose_file }}"
+#         dest: "{{ dest_compose_file }}"
+#         perms: true
+#         times: true
+#       delegate_to: localhost
+
+#     - name: Sync {{ compose_profile }} environment file
+#       ansible.posix.synchronize:
+#         src: "{{ source_env_file }}"
+#         dest: "{{ dest_env_file }}"
+#         perms: true
+#         times: true
+#       delegate_to: localhost
+
+#     - name: Sync {{ compose_profile }} secrets directory
+#       ansible.posix.synchronize:
+#         src: "{{ source_docker_dir }}/secrets/{{ compose_profile }}/"
+#         dest: "{{ docker_dest_dir }}/secrets/"
+#         delete: true
+#         archive: false
+#         checksum: true
+#         recursive: true
+#         links: true
+#         compress: true
+#         rsync_opts:
+#           - "--exclude=*.sops*"
+#           - "--exclude=*.sops"
+#       delegate_to: localhost
+
+#     - name: Find all secret files
+#       ansible.builtin.find:
+#         paths: "{{ docker_dest_dir }}/secrets"
+#         file_type: file
+#       register: all_secret_files
+
+#     - name: Ensure correct ownership and permissions on secret files
+#       ansible.builtin.file:
+#         path: "{{ item.path }}"
+#         owner: ansible
+#         group: ansible
+#         mode: "{{ secret_mode }}"
+#       loop: "{{ all_secret_files.files }}"
+#       loop_control:
+#         label: "{{ item.path | basename }}"
+#       vars:
+#         filename: "{{ item.path | basename }}"
+#         is_special: >-
+#           {{
+#             special_secret_patterns
+#             | map('regex_search', filename)
+#             | select('string')
+#             | list
+#             | length > 0
+#           }}
+#         secret_mode: "{{ '0644' if is_special else '0600' }}"
+
+#     - name: Sync Traefik common config
+#       ansible.posix.synchronize:
+#         src: "{{ source_docker_dir }}/services/traefik/config/common/"
+#         dest: "{{ docker_dest_dir }}/services/traefik/config/"
+#         delete: false
+#         archive: false
+#         checksum: true
+#         recursive: true
+#         links: true
+#         compress: true
+#         rsync_opts:
+#           - "--exclude=*.sops*"
+#       delegate_to: localhost
+
+#     - name: Sync Traefik {{ compose_profile }} config
+#       ansible.posix.synchronize:
+#         src: "{{ source_docker_dir }}/services/traefik/config/{{ compose_profile }}/"
+#         dest: "{{ docker_dest_dir }}/services/traefik/config/"
+#         delete: false
+#         archive: false
+#         checksum: true
+#         recursive: true
+#         links: true
+#         compress: true
+#         rsync_opts:
+#           - "--exclude=*.sops*"
+#       delegate_to: localhost
+
+#     - name: Sync Socket Proxy {{ compose_profile }} config
+#       ansible.posix.synchronize:
+#         src: "{{ source_docker_dir }}/services/socket-proxy/{{ compose_profile }}/"
+#         dest: "{{ docker_dest_dir }}/services/socket-proxy/"
+#         delete: true
+#         perms: true
+#         rsync_opts:
+#           - "-az"
+#           - "--checksum"
+#           - "--exclude=*.sops*"
+#       delegate_to: localhost
+
+#     - name: Find all service compose files
+#       ansible.builtin.find:
+#         paths: "{{ source_docker_dir }}/services"
+#         patterns: "compose.yaml"
+#         recurse: true
+#       register: all_services_raw
+#       delegate_to: localhost
+#       run_once: true
+
+#     - name: Filter excluded service directories
+#       ansible.builtin.set_fact:
+#         service_compose_files: >-
+#           {{
+#             all_services_raw.files
+#             | rejectattr('path', 'search', '/socket-proxy/')
+#             | rejectattr('path', 'search', '/traefik/config/')
+#             | list
+#           }}
+#       delegate_to: localhost
+#       run_once: true
+
+#     - name: Load compose files
+#       ansible.builtin.slurp:
+#         path: "{{ item.path }}"
+#       loop: "{{ service_compose_files }}"
+#       loop_control:
+#         label: "{{ item.path | basename }}"
+#       register: slurped_compose_files
+#       delegate_to: localhost
+#       run_once: true
+
+#     - name: Determine services matching profile {{ compose_profile }}
+#       ansible.builtin.set_fact:
+#         services_to_sync: "{{ services_to_sync | default([]) + [service_dir] }}"
+#       vars:
+#         compose_data: "{{ item.content | b64decode | from_yaml }}"
+#         matching_services: >-
+#           {{
+#             compose_data.services | default({})
+#             | dict2items
+#             | selectattr('value.profiles', 'defined')
+#             | selectattr('value.profiles', 'contains', compose_profile)
+#             | list
+#           }}
+#         service_dir: "{{ item.source | dirname }}"
+#       when: matching_services | length | int > 0
+#       loop: "{{ slurped_compose_files.results }}"
+#       loop_control:
+#         label: "{{ item.source | dirname | basename }}"
+#       delegate_to: localhost
+#       run_once: true
+
+#     - name: Deduplicate matched service directories
+#       ansible.builtin.set_fact:
+#         services_to_sync: "{{ services_to_sync | default([]) | unique | list }}"
+#       delegate_to: localhost
+#       run_once: true
+
+#     - name: Display matched services
+#       ansible.builtin.debug:
+#         msg: >
+#           Services to deploy for {{ compose_profile }}:
+#           {{ services_to_sync | default([]) | map('basename') | list }}
+#       when: verbose | default(false) | bool
+
+#     - name: Build rsync include patterns
+#       ansible.builtin.set_fact:
+#         service_include_patterns: >-
+#           {{
+#             services_to_sync | default([]) |
+#             map('basename') |
+#             map('regex_replace', '^(.*)$', '--include=/\\1/') |
+#             list
+#             +
+#             services_to_sync | default([]) |
+#             map('basename') |
+#             map('regex_replace', '^(.*)$', '--include=/\\1/**') |
+#             list
+#           }}
+#       delegate_to: localhost
+#       run_once: true
+#       when: services_to_sync is defined
+
+#     - name: Sync matched services
+#       ansible.posix.synchronize:
+#         src: "{{ source_docker_dir }}/services/"
+#         dest: "{{ docker_dest_dir }}/services/"
+#         delete: false
+#         perms: true
+#         rsync_opts: >-
+#           {{
+#             ['-az',
+#              '--checksum',
+#              '--exclude=*.sops*',
+#              '--exclude=acme.json',
+#              '--exclude=socket-proxy/',
+#              '--exclude=traefik/config/']
+#             + (service_include_patterns | default([]))
+#             + ['--exclude=*']
+#           }}
+#       delegate_to: localhost
+#       when: service_include_patterns is defined
+
+- name: Deploy Docker Compose block
+  when: not dry_run | default(false) | bool
+  become: true
+  block:
+    - name: Pull latest Docker images for the stack
+      ansible.builtin.command:
+        cmd: docker compose pull
+        chdir: "{{ docker_dest_dir }}"
+      register: docker_compose_pull_result
+      changed_when: "'Downloaded newer image' in docker_compose_pull_result.stdout"
+
+    - name: Run Docker Compose to deploy the stack
+      ansible.builtin.command:
+        cmd: docker compose up -d --remove-orphans
+        chdir: "{{ docker_dest_dir }}"
+      register: docker_compose_result
+      changed_when: "'Starting' in docker_compose_result.stdout or 'Creating' in docker_compose_result.stdout"
+    - name: Display Docker Compose output
+      ansible.builtin.debug:
+        var: docker_compose_result.stdout_lines
+      when:
+        - docker_compose_result is defined
+        - verbose | default(false) | bool

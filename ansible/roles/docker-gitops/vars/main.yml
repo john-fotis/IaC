@@ -1,0 +1,6 @@
+---
+# roles/docker-gitops/vars/main.yml
+
+enable_notifications: true
+docker_health_check_interval: 5
+docker_health_check_timeout: 120

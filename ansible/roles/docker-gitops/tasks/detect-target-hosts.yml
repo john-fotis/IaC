@@ -1,0 +1,68 @@
+---
+# roles/docker-gitops/tasks/detect-target-hosts.yml
+
+- name: Get list of changed files from Git
+  ansible.builtin.command:
+    cmd: "git diff --name-only {{ git_previous_commit }} {{ git_current_commit }}"
+    chdir: "{{ git_local_path }}"
+  register: git_changed_files
+  when: git_repo_changed | default(false) | bool
+  changed_when: false
+
+- name: Filter changed compose files
+  ansible.builtin.set_fact:
+    changed_compose_files: >-
+      {{ git_changed_files.stdout_lines
+         | select('match', '^services/.*compose\\.(yml|yaml)$')
+         | list }}
+  when: git_repo_changed | default(false) | bool
+
+- name: Extract unique profiles from changed compose files
+  ansible.builtin.set_fact:
+    detected_profiles: "{{ (detected_profiles | default([])) + current_file_profiles | unique }}"
+  vars:
+    parsed_yaml: "{{ lookup('file', git_local_path ~ '/' ~ item) | from_yaml }}"
+    current_file_profiles: >-
+      {{ parsed_yaml.services.values()
+         | selectattr('profiles', 'defined')
+         | map(attribute='profiles')
+         | flatten
+         | list }}
+  loop: "{{ changed_compose_files | default([]) }}"
+  when:
+    - git_repo_changed | default(false) | bool
+    - changed_compose_files is defined
+    - changed_compose_files | length > 0
+
+- name: Map detected profiles to inventory hosts
+  ansible.builtin.set_fact:
+    dynamic_deploy_hosts: >-
+      {{ detected_profiles | default([])
+         | map('extract', groups)
+         | flatten
+         | unique
+         | list }}
+  when:
+    - detected_profiles is defined
+    - detected_profiles | length > 0
+
+- name: Fallback to all docker hosts if no profiles detected
+  ansible.builtin.set_fact:
+    dynamic_deploy_hosts: "{{ groups['docker'] }}"
+  when:
+    - target_env is not defined
+    - (dynamic_deploy_hosts is not defined) or (dynamic_deploy_hosts | length == 0)
+
+- name: Create dynamic inventory group for deployment
+  ansible.builtin.add_host:
+    name: "{{ item }}"
+    groups: gitops_dynamic_targets
+  loop: "{{ dynamic_deploy_hosts | default([]) }}"
+  when: dynamic_deploy_hosts is defined and dynamic_deploy_hosts | length > 0
+
+- name: Display dynamically resolved targets
+  ansible.builtin.debug:
+    msg:
+      - "Changed compose files: {{ changed_compose_files | default('None') }}"
+      - "Detected profiles: {{ detected_profiles | default('None') }}"
+      - "Resolved target hosts: {{ dynamic_deploy_hosts | default([]) }}"

@@ -1,0 +1,58 @@
+---
+# roles/docker-gitops/tasks/pre-deployment.yml
+
+- name: Validate git_repo_url is set
+  ansible.builtin.assert:
+    that:
+      - git_repo_url is defined
+      - git_repo_url | length > 0
+    fail_msg: "git_repo_url must be defined"
+    success_msg: "git_repo_url validation passed"
+
+- name: Check if Git is installed on bastion
+  ansible.builtin.command: git --version
+  register: git_version
+  changed_when: false
+  failed_when: false
+
+- name: Fail if Git is not installed
+  ansible.builtin.fail:
+    msg: "Git is not installed on the bastion host. Please install it first."
+  when: git_version.rc != 0
+
+- name: Check if SOPS is installed (when enabled)
+  ansible.builtin.command: "{{ sops_binary }} --version"
+  register: sops_version
+  changed_when: false
+  failed_when: false
+  when: use_sops | bool
+
+- name: Warn if SOPS is not installed
+  ansible.builtin.debug:
+    msg: "WARNING: SOPS is not installed but use_sops is true. Secrets will not be decrypted."
+  when:
+    - use_sops | bool
+    - sops_version.rc != 0
+
+- name: Check if SOPS Age key file exists
+  ansible.builtin.stat:
+    path: "{{ sops_age_key_file }}"
+  register: age_key_stat
+  when: use_sops | bool
+
+- name: Warn if SOPS Age key not found
+  ansible.builtin.debug:
+    msg: "WARNING: SOPS Age key file not found at {{ sops_age_key_file }}"
+  when:
+    - use_sops | bool
+    - age_key_stat is defined
+    - not age_key_stat.stat.exists
+
+- name: Ensure target hosts are reachable
+  ansible.builtin.ping:
+  register: ping_result
+
+- name: Display connectivity status
+  ansible.builtin.debug:
+    msg: "Successfully connected to {{ inventory_hostname }}"
+  when: ping_result is succeeded

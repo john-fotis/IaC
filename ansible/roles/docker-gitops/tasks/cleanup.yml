@@ -1,0 +1,13 @@
+---
+# roles/docker-gitops/tasks/cleanup.yml
+
+- name: Cleanup unused Docker resources
+  ansible.builtin.command: docker system prune -af
+  become: true
+  register: docker_prune_result
+  changed_when: "'Total reclaimed space: 0B' not in docker_prune_result.stdout"
+
+- name: Display cleanup results
+  ansible.builtin.debug:
+    msg: "{{ docker_prune_result.stdout_lines }}"
+  when: verbose | default(false) | bool

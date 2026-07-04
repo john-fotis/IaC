@@ -1,0 +1,23 @@
+---
+# roles/docker-gitops/tasks/git-cleanup.yml
+
+- name: Revert back to original branch
+  ansible.builtin.command: git checkout {{ git_branch | default('main') }}
+  args:
+    chdir: "{{ git_local_path }}"
+  changed_when: false
+  ignore_errors: true
+
+- name: Delete temporary deployment branch
+  ansible.builtin.command: git branch -D automated-deployment
+  args:
+    chdir: "{{ git_local_path }}"
+  changed_when: false
+  ignore_errors: true
+
+- name: Pop stash if it exists
+  ansible.builtin.command: git stash pop
+  args:
+    chdir: "{{ git_local_path }}"
+  failed_when: false
+  changed_when: false

@@ -1,0 +1,64 @@
+---
+# roles/docker-gitops/defaults/main.yml
+
+# Git repository settings
+git_repo_url: "git@github.com:john-fotis/IaC.git"
+git_branch: "main"
+git_local_path: "/home/ansible/actions-runner/_work/IaC"
+git_depth: 1
+
+# Docker settings
+docker_dest_dir: "/home/ansible/docker"
+docker_compose_file: "docker-compose.yaml"
+
+# SOPS settings
+use_sops: true
+sops_age_key_file: "{{ lookup('env', 'HOME') }}/.config/sops/age/keys.txt"
+sops_binary: "/usr/local/bin/sops"
+
+# Deployment settings
+dry_run: false
+verbose: false
+force_deploy: false
+check_mode_enabled: "{{ ansible_check_mode | default(false) }}"
+
+# GitOps daemon settings
+continuous_mode: false
+git_poll_interval: 300 # 5 minutes
+max_poll_iterations: 0 # 0 = infinite
+
+# Rsync settings
+rsync_opts:
+  - "-az"
+  - "--perms"
+  - "--executability"
+  # - "--delete" # Remove files that don't exist in source
+
+rsync_excludes:
+  - "secrets/"
+  - "socket-proxy/"
+  - "traefik/config/"
+  - "*.env*"
+  - "*.log"
+  - "*.sample*"
+  - "*.sops"
+  - "*.swp"
+  - "*~"
+  - ".DS_Store"
+  - ".git"
+  - ".gitignore"
+  - ".yamllint"
+  - "acme.json"
+  - "docker-compose*"
+  - "README.md"
+  - "sync.sh"
+
+# Service directories that are handled separately
+special_service_dirs:
+  - "socket-proxy"
+  - "traefik"
+  - "secrets"
+
+# Notification settings
+enable_notifications: false
+discord_webhook_url: ""

@@ -33,24 +33,27 @@
 
   when: sudo_user_exists.changed
 
-- name: Create ansible if not exists
-  ansible.builtin.user:
-    name: "ansible"
-    groups: sudo
-    shell: /bin/bash
-    create_home: yes
+- name: Create ansible user and configure passwordless sudo and SSH key
+  when: run_host_ansible_bootstrap | bool
+  block:
+    - name: Create ansible if not exists
+      ansible.builtin.user:
+        name: "ansible"
+        groups: sudo
+        shell: /bin/bash
+        create_home: yes
 
-- name: Configure passwordless sudo for ansible user
-  ansible.builtin.copy:
-    dest: "/etc/sudoers.d/ansible"
-    content: "ansible ALL=(ALL) NOPASSWD:ALL"
-    mode: "0440"
-    owner: root
-    group: root
+    - name: Configure passwordless sudo for ansible user
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/ansible"
+        content: "ansible ALL=(ALL) NOPASSWD:ALL"
+        mode: "0440"
+        owner: root
+        group: root
 
-- name: Ensure SSH key directory exists for ansible
-  ansible.posix.authorized_key:
-    user: ansible
-    state: present
-    manage_dir: yes
-    key: "{{ lookup('file', ansible_ssh_private_key_file + '.pub') }}"
+    - name: Ensure SSH key directory exists for ansible
+      ansible.posix.authorized_key:
+        user: ansible
+        state: present
+        manage_dir: yes
+        key: "{{ lookup('file', ansible_ssh_private_key_file + '.pub') }}"

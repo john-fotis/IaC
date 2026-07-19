@@ -54,7 +54,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/agent", "health"]
-      interval: 120s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   beszel-data:

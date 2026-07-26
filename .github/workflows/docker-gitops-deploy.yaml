@@ -45,8 +45,8 @@ jobs:
             exit 0
           fi
 
-          PROFILES=$(yq eval '.services[].profiles | select(. != null) | .[]' \
-            $FILES_TO_SCAN | sort -u | grep -v '---' || true)
+          PROFILES=$(yq eval '.services[].profiles | select(. != null) | .[]' $FILES_TO_SCAN \
+            | sort -u | grep -v -- '---' || true)
           if [ -z "$PROFILES" ]; then
             echo 'env_matrix=[]' >> $GITHUB_OUTPUT
           else

@@ -1,0 +1,63 @@
+---
+# roles/docker-gitops/tasks/sync.yml
+
+- name: Pre-deployment tasks
+  when: not dry_run | default(false) | bool
+  vars:
+    special_secret_patterns:
+      - "^authentik_.*"
+      - "^komodo_db_.*"
+      - "^cloudflared_token$"
+  block:
+    - name: Create necessary directories on the target host
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: "0755"
+      loop:
+        - "/home/ansible/docker"
+        - "/home/ansible/docker/services"
+        - "/home/ansible/docker/secrets"
+        - "/home/ansible/docker/services/traefik/config"
+        - "/home/ansible/docker/services/socket-proxy"
+      delegate_to: "{{ inventory_hostname }}"
+      become: true
+      changed_when: false
+
+    - name: Sync {{ compose_profile }} Services
+      ansible.builtin.command:
+        cmd: "{{ git_local_path }}/docker/sync.sh {{ compose_profile }}"
+        chdir: "{{ git_local_path }}"
+      delegate_to: localhost
+      run_once: true
+      register: sync_result
+
+    - name: Find all secret files
+      ansible.builtin.find:
+        paths: "{{ docker_dest_dir }}/secrets"
+        file_type: file
+      register: all_secret_files
+
+    - name: Ensure correct ownership and permissions on secret files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        owner: ansible
+        group: ansible
+        mode: "{{ secret_mode }}"
+      loop: "{{ all_secret_files.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+      vars:
+        filename: "{{ item.path | basename }}"
+        is_special: >-
+          {{
+            special_secret_patterns
+            | map('regex_search', filename)
+            | select('string')
+            | list
+            | length > 0
+          }}
+        secret_mode: "{{ '0644' if is_special else '0600' }}"
+      become: true

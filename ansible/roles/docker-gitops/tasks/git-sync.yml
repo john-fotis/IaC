@@ -1,0 +1,99 @@
+---
+# roles/docker-gitops/tasks/git-sync.yml
+
+- name: Ensure Git local directory exists
+  ansible.builtin.file:
+    path: "{{ git_local_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Check if Git repository already exists
+  ansible.builtin.stat:
+    path: "{{ git_local_path }}/.git"
+  register: git_repo_stat
+
+- name: Clone Git repository
+  ansible.builtin.git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_local_path }}"
+    version: "{{ git_branch }}"
+    depth: "{{ git_depth | default(omit) }}"
+    accept_hostkey: yes
+  register: git_clone_result
+  when: not git_repo_stat.stat.exists
+
+- name: Get current Git commit before pull
+  ansible.builtin.command:
+    cmd: git rev-parse HEAD
+    chdir: "{{ git_local_path }}"
+  register: git_commit_before
+  changed_when: false
+  when: git_repo_stat.stat.exists
+
+- name: Prepare temporary branch for update
+  when: git_repo_stat.stat.exists
+  block:
+    - name: Ensure working directory is clean
+      ansible.builtin.command: git stash
+      args:
+        chdir: "{{ git_local_path }}"
+      changed_when: false
+
+    - name: Pull latest changes from Git repository
+      ansible.builtin.command: "git pull origin {{ git_branch | default('main') }}"
+      args:
+        chdir: "{{ git_local_path }}"
+
+    - name: Ensure on main branch before creating temporary branch
+      ansible.builtin.command: git checkout main
+      args:
+        chdir: "{{ git_local_path }}"
+      ignore_errors: true
+      changed_when: false
+
+    - name: Remove old temporary branch if it exists
+      ansible.builtin.command: git branch -D automated-deployment
+      args:
+        chdir: "{{ git_local_path }}"
+      ignore_errors: true
+      changed_when: false
+
+    - name: Create and switch to temporary branch from latest remote
+      ansible.builtin.command: git checkout -b automated-deployment origin/{{ git_branch }}
+      args:
+        chdir: "{{ git_local_path }}"
+
+- name: Get current Git commit after pull
+  ansible.builtin.command:
+    cmd: git rev-parse HEAD
+    chdir: "{{ git_local_path }}"
+  register: git_commit_after
+  changed_when: false
+
+- name: Set fact for Git commit
+  ansible.builtin.set_fact:
+    git_current_commit: "{{ git_commit_after.stdout }}"
+    git_previous_commit: "{{ git_commit_before.stdout | default('initial') }}"
+    git_repo_changed: "{{ git_commit_before.stdout | default('') != git_commit_after.stdout }}"
+
+- name: Display Git sync status
+  ansible.builtin.debug:
+    msg:
+      - "Git sync completed via automated-deployment branch"
+      - "Previous commit: {{ git_previous_commit }}"
+      - "Current commit: {{ git_current_commit }}"
+      - "Repository changed: {{ git_repo_changed }}"
+  when: verbose | default(false) | bool
+
+- name: Debug force deploy
+  ansible.builtin.debug:
+    msg: "Force deploy is enabled. Proceeding with deployment."
+  when:
+    - force_deploy | default(false) | bool
+    - verbose | default(false) | bool
+
+- name: Skip deployment if no changes and not forced
+  ansible.builtin.meta: end_play
+  when:
+    - not git_repo_changed
+    - not force_deploy | default(false) | bool

@@ -1,0 +1,20 @@
+---
+# playbooks/docker-deploy.yml
+
+- name: GitOps Phase 1 - Bastion Preparation
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Run bastion preparation tasks
+      ansible.builtin.include_role:
+        name: docker-gitops
+        tasks_from: local-prep.yml
+
+- name: GitOps Phase 2 - Target Host Deployment
+  hosts: "{{ target_env | default('gitops_dynamic_targets') }}"
+  gather_facts: yes
+  tasks:
+    - name: Run remote deployment tasks
+      ansible.builtin.include_role:
+        name: docker-gitops

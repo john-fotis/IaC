@@ -1,0 +1,43 @@
+---
+# roles/docker-gitops/tasks/main.yml
+
+- name: Set compose_profile fact based on target host
+  ansible.builtin.set_fact:
+    compose_profile: "{{ hostvars[inventory_hostname]['compose_profile'] }}"
+
+- name: Display pre-flight info
+  ansible.builtin.debug:
+    msg: >-
+      === Starting GitOps Phase 2 Pipeline ===
+      Target Host: {{ inventory_hostname }}
+      Profile: {{ compose_profile }}
+      Dry Run: {{ dry_run | default(false) }}
+
+- name: Deployment and Post-Deployment Tasks
+  block:
+    - name: Include Docker stack deployment tasks
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/deploy-stack.yml"
+      tags: ["gitops-deploy"]
+
+    - name: Include post-deployment controller (Verify, Cleanup, Notify)
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/post-deployment.yml"
+      tags: ["gitops-post-deploy"]
+  when:
+    - not dry_run | default(false) | bool
+    - >-
+      hostvars['localhost']['sops_decrypt_result'] is not defined
+      or not hostvars['localhost']['sops_decrypt_result'].failed | default(false)
+
+- name: Display deployment summary
+  ansible.builtin.debug:
+    msg: >-
+      === Docker GitOps Deployment Summary ===
+      Target Host: {{ inventory_hostname }}
+      Environment: {{ compose_profile }}
+      Git Commit: {{ (hostvars['localhost']['git_current_commit'] | default('N/A'))[:7] }}
+      Repository: {{ git_repo_url }}
+      Deployment Directory: {{ docker_dest_dir }}
+      SOPS Enabled: {{ use_sops | default(false) }}
+      Dry Run: {{ dry_run | default(false) }}
+      Deployment completed successfully.
+  tags: ["always"]

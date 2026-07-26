@@ -1,0 +1,1 @@
+ansible -i inventories/docker.ini all -e "ansible_user=john ansible_ssh_private_key_file=/home/john/.ssh/id_rsa_john" -m ping

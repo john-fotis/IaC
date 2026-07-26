@@ -74,5 +74,4 @@
 
         - name: Return git clone to a clean state
           ansible.builtin.include_tasks: git-cleanup.yml
-          delegate_to: localhost
           run_once: true

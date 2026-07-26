@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       target_env:
-        description: "auto runs dmz then prod; or pick one directly"
+        description: "Target environment (auto-detected from git changes, or manually specified)"
         type: choice
         default: auto
         options: [auto, dmz, prod]
@@ -25,66 +25,35 @@ on:
         default: false
 
 jobs:
-  plan:
+  deploy:
     runs-on: self-hosted
-    outputs:
-      run_dmz: ${{ steps.plan.outputs.run_dmz }}
-      run_prod: ${{ steps.plan.outputs.run_prod }}
+    concurrency:
+      group: docker-gitops-deploy
+      cancel-in-progress: false
     steps:
-      - id: plan
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Ansible GitOps Deployment
+        working-directory: ansible
         run: |
+          # Build the Ansible command with dynamic parameters based on workflow inputs
+          CMD="ansible-playbook -i inventories/docker.ini playbooks/docker-deploy.yml"
           TARGET="${{ github.event.inputs.target_env }}"
-          TARGET="${TARGET:-auto}"
-          echo "Resolved target_env: $TARGET (event: ${{ github.event_name }})"
-          case "$TARGET" in
-            auto) echo "run_dmz=true" >> "$GITHUB_OUTPUT"; echo "run_prod=true" >> "$GITHUB_OUTPUT" ;;
-            dmz)  echo "run_dmz=true" >> "$GITHUB_OUTPUT"; echo "run_prod=false" >> "$GITHUB_OUTPUT" ;;
-            prod) echo "run_dmz=false" >> "$GITHUB_OUTPUT"; echo "run_prod=true" >> "$GITHUB_OUTPUT" ;;
-            *) echo "Unrecognized target_env: $TARGET" >&2; exit 1 ;;
-          esac
 
-  deploy-dmz:
-    needs: plan
-    if: always() && needs.plan.result == 'success' && needs.plan.outputs.run_dmz == 'true'
-    runs-on: self-hosted
-    environment: dmz
-    concurrency:
-      group: docker-gitops-dmz
-      cancel-in-progress: false
-    steps:
-      - name: Deploy dmz
-        working-directory: /home/ansible/actions-runner/_work/IaC/ansible
-        run: |
-          DRY_RUN="${{ github.event.inputs.dry_run }}"
-          FORCE_DEPLOY="${{ github.event.inputs.force_deploy }}"
-          VERBOSE="${{ github.event.inputs.verbose }}"
-          ansible-playbook -i inventories/docker.ini playbooks/docker-deploy.yml \
-            -e "target_env=dmz" \
-            -e "dry_run=${DRY_RUN:-false}" \
-            -e "force_deploy=${FORCE_DEPLOY:-false}" \
-            -e "verbose=${VERBOSE:-false}"
+          # If triggered by workflow_dispatch AND a specific env is chosen, force the target_env
+          # Otherwise, leave target_env undefined for Ansible to detect
+          if [ -n "$TARGET" ] && [ "$TARGET" != "auto" ]; then CMD="$CMD -e target_env=$TARGET"; fi
 
-  deploy-prod:
-    needs: [plan, deploy-dmz]
-    if: >-
-      always() &&
-      needs.plan.result == 'success' &&
-      needs.plan.outputs.run_prod == 'true' &&
-      (needs.deploy-dmz.result == 'success' || needs.deploy-dmz.result == 'skipped')
-    runs-on: self-hosted
-    environment: prod
-    concurrency:
-      group: docker-gitops-prod
-      cancel-in-progress: false
-    steps:
-      - name: Deploy prod
-        working-directory: /home/ansible/actions-runner/_work/IaC/ansible
-        run: |
-          DRY_RUN="${{ github.event.inputs.dry_run }}"
-          FORCE_DEPLOY="${{ github.event.inputs.force_deploy }}"
-          VERBOSE="${{ github.event.inputs.verbose }}"
-          ansible-playbook -i inventories/docker.ini playbooks/docker-deploy.yml \
-            -e "target_env=prod" \
-            -e "dry_run=${DRY_RUN:-false}" \
-            -e "force_deploy=${FORCE_DEPLOY:-false}" \
-            -e "verbose=${VERBOSE:-false}"
+          # Handle other boolean flags (fallback to false for push events where inputs are null)
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          FORCE="${{ github.event.inputs.force_deploy || 'false' }}"
+          VERBOSE="${{ github.event.inputs.verbose || 'false' }}"
+
+          # Construct the final command with all parameters
+          CMD="$CMD -e dry_run=$DRY_RUN -e force_deploy=$FORCE -e verbose=$VERBOSE"
+
+          echo "Executing: $CMD"
+          eval $CMD

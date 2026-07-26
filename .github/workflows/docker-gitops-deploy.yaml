@@ -1,4 +1,3 @@
----
 name: docker-gitops-deploy
 
 on:
@@ -9,11 +8,6 @@ on:
       - "ansible/**"
   workflow_dispatch:
     inputs:
-      target_env:
-        description: "Target environment (auto-detected from git changes, or manually specified)"
-        type: choice
-        default: auto
-        options: [auto, dmz, prod]
       dry_run:
         type: boolean
         default: false
@@ -25,11 +19,55 @@ on:
         default: false
 
 jobs:
-  deploy:
+  plan:
     runs-on: self-hosted
+    outputs:
+      env_matrix: ${{ steps.detect.outputs.env_matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Environments from Git Changes
+        id: detect
+        run: |
+          CHANGED_FILES=$(git diff --name-only \
+            ${{ github.event.before || 'HEAD~1' }} \
+            ${{ github.sha || 'HEAD' }} | grep -E 'compose\.(yml|yaml)$' || true)
+          if [ "${{ inputs.force_deploy }}" == "true" ] || [ -z "$CHANGED_FILES" ]; then
+            FILES_TO_SCAN=$(find docker -type f -name '*compose.yml' -o -name '*compose.yaml')
+          else
+            FILES_TO_SCAN=$CHANGED_FILES
+          fi
+          if [ -z "$FILES_TO_SCAN" ]; then
+            echo 'env_matrix=[]' >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          PROFILES=$(yq eval '.services[].profiles | select(. != null) | .[]' \
+            $FILES_TO_SCAN | sort -u | grep -v '---' || true)
+          if [ -z "$PROFILES" ]; then
+            echo 'env_matrix=[]' >> $GITHUB_OUTPUT
+          else
+            JSON_ARRAY=$(echo "$PROFILES" | jq -R . | jq -s -c .)
+            echo "env_matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: plan
+    if: ${{ needs.plan.outputs.env_matrix != '[]' && needs.plan.outputs.env_matrix != '' }}
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.plan.outputs.env_matrix) }}
+      fail-fast: false
+    environment: ${{ matrix.target }}
+
     concurrency:
-      group: docker-gitops-deploy
+      group: docker-gitops-${{ matrix.target }}
       cancel-in-progress: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,22 +76,11 @@ jobs:
 
       - name: Run Ansible GitOps Deployment
         working-directory: ansible
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          FORCE: ${{ inputs.force_deploy || 'false' }}
+          VERBOSE: ${{ inputs.verbose || 'false' }}
         run: |
-          # Build the Ansible command with dynamic parameters based on workflow inputs
-          CMD="ansible-playbook -i inventories/docker.ini playbooks/docker-deploy.yml"
-          TARGET="${{ github.event.inputs.target_env }}"
-
-          # If triggered by workflow_dispatch AND a specific env is chosen, force the target_env
-          # Otherwise, leave target_env undefined for Ansible to detect
-          if [ -n "$TARGET" ] && [ "$TARGET" != "auto" ]; then CMD="$CMD -e target_env=$TARGET"; fi
-
-          # Handle other boolean flags (fallback to false for push events where inputs are null)
-          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
-          FORCE="${{ github.event.inputs.force_deploy || 'false' }}"
-          VERBOSE="${{ github.event.inputs.verbose || 'false' }}"
-
-          # Construct the final command with all parameters
-          CMD="$CMD -e dry_run=$DRY_RUN -e force_deploy=$FORCE -e verbose=$VERBOSE"
-
-          echo "Executing: $CMD"
-          eval $CMD
+          EXTRA_VARS="-e target_env=${{ matrix.target }} -e dry_run=$DRY_RUN -e force_deploy=$FORCE -e verbose=$VERBOSE"
+          echo "Executing for ${{ matrix.target }} with variables: $EXTRA_VARS"
+          ansible-playbook -i inventories/docker.ini playbooks/docker-deploy.yml $EXTRA_VARS

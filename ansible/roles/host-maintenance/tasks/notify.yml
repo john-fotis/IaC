@@ -1,0 +1,61 @@
+---
+# roles/host-maintenance/tasks/notify.yml
+
+- name: Generate Summary Report Facts
+  delegate_to: localhost
+  ansible.builtin.set_fact:
+    summary_updated: >-
+      {%- set hosts = [] -%}
+      {%- for h in ansible_play_hosts_all -%}
+        {%- if hostvars[h].get('node_status', 'offline') == 'online' -%}
+          {%- set _ = hosts.append(h) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ hosts | join(', ') | default('None', true) }}
+
+    summary_offline: >-
+      {%- set hosts = [] -%}
+      {%- for h in ansible_play_hosts_all -%}
+        {%- if hostvars[h].get('node_status', 'offline') != 'online' -%}
+          {%- set _ = hosts.append(h) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ hosts | join(', ') | default('None', true) }}
+
+    summary_reboot: >-
+      {%- set hosts = [] -%}
+      {%- for h in ansible_play_hosts_all -%}
+        {%- if hostvars[h].get('needs_reboot', false) -%}
+          {%- set _ = hosts.append(h) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ hosts | join(', ') | default('None', true) }}
+
+- name: Send Discord Maintenance Summary
+  delegate_to: localhost
+  ansible.builtin.uri:
+    url: "{{ discord_webhook_url }}"
+    method: POST
+    body_format: json
+    body:
+      content: "{{ discord_admin_ping | default('@here') if summary_reboot != 'None' else '' }}"
+      embeds:
+        - title: "🛠️ System Maintenance Report"
+          color: "{{ 16753920 if summary_reboot != 'None' or summary_offline != 'None' else 65280 }}"
+          fields:
+            - name: "✅ Successfully Updated"
+              value: "```\n{{ summary_updated }}\n```"
+              inline: false
+            - name: "❌ Unreachable / Failed"
+              value: "```\n{{ summary_offline }}\n```"
+              inline: false
+            - name: "🔄 Manual Reboot Required"
+              value: "```\n{{ summary_reboot }}\n```"
+              inline: false
+    status_code: 204
+  no_log: true
+  ignore_errors: true
+  when:
+    - enable_notifications | bool
+    - discord_webhook_url is defined
+    - discord_webhook_url != ""

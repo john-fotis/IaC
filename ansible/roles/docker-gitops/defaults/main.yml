@@ -2,9 +2,10 @@
 # roles/docker-gitops/defaults/main.yml
 
 # Git repository settings
+skip_git_sync: false
 git_repo_url: "git@github.com:john-fotis/IaC.git"
 git_branch: "main"
-git_local_path: "/home/ansible/actions-runner/_work/IaC"
+git_local_path: "{{ playbook_dir }}/.."
 git_depth: 1
 
 # Docker settings

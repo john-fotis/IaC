@@ -1,0 +1,42 @@
+---
+# roles/host-maintenance/tasks/main.yml
+
+- name: System Maintenance Pipeline
+  block:
+    - name: Ping host to check reachability
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+      tags: ["always"]
+
+    - name: Set node availability status
+      ansible.builtin.set_fact:
+        node_status: "{{ 'online' if ping_result is success else 'offline' }}"
+      tags: ["always"]
+
+    - name: Setup bastion automation
+      ansible.builtin.include_tasks: bastion-setup.yml
+      run_once: true
+      tags: ["maintenance-setup"]
+
+    - name: Maintenance Operations Block
+      when: node_status == 'online'
+      become: true
+      block:
+        - name: Run system updates
+          ansible.builtin.include_tasks: update.yml
+          tags: ["maintenance-update"]
+
+        - name: Run system cleanup
+          ansible.builtin.include_tasks: cleanup.yml
+          tags: ["maintenance-cleanup"]
+
+        - name: Check reboot status
+          ansible.builtin.include_tasks: reboot-check.yml
+          tags: ["maintenance-notify"]
+
+    - name: Send aggregated notifications
+      ansible.builtin.include_tasks: notify.yml
+      run_once: true
+      tags: ["maintenance-notify"]

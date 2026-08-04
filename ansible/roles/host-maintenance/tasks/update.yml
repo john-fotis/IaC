@@ -1,0 +1,17 @@
+---
+# roles/host-maintenance/tasks/update.yml
+
+- name: Update apt cache and run dist-upgrade
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+    cache_valid_time: 3600
+  register: apt_update_result
+  retries: 3
+  delay: 10
+  until: apt_update_result is success
+
+- name: Display update results
+  ansible.builtin.debug:
+    msg: "System updated successfully."
+  when: verbose | default(false) | bool

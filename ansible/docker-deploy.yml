@@ -1,6 +1,5 @@
+# Ansible Playbook for GitOps Deployment of Docker Containers
 ---
-# playbooks/docker-deploy.yml
-
 - name: GitOps Phase 1 - Bastion Preparation
   hosts: localhost
   connection: local

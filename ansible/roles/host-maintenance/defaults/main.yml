@@ -1,0 +1,5 @@
+---
+# roles/host-maintenance/defaults/main.yml
+
+enable_notifications: true
+discord_admin_ping: "<@&admin>"

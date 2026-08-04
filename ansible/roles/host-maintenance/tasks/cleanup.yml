@@ -1,0 +1,13 @@
+---
+# roles/host-maintenance/tasks/cleanup.yml
+
+- name: Remove unused dependencies and clean apt cache
+  ansible.builtin.apt:
+    autoremove: true
+    autoclean: true
+  register: apt_cleanup_result
+
+- name: Display cleanup results
+  ansible.builtin.debug:
+    msg: "System cleaned. Unused packages removed."
+  when: verbose | default(false) | bool

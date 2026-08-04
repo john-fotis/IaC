@@ -9,6 +9,9 @@
   failed_when: sops_decrypt_result.rc != 0
   changed_when: sops_decrypt_result.stdout_lines | length > 0
 
+- name: Re-read the decrypted inventory
+  ansible.builtin.meta: refresh_inventory
+
 - name: Find .sops and .sops.* files in docker directory
   ansible.builtin.find:
     paths: "{{ git_local_path }}/docker"

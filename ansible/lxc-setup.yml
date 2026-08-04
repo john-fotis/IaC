@@ -1,3 +1,4 @@
+# Ansible Playbook for LXC Setup
 ---
 - name: Check SSH access as sudo_user from localhost
   hosts: lxcs

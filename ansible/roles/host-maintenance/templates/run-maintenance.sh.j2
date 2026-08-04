@@ -1,0 +1,17 @@
+#!/bin/bash
+# roles/host-maintenance/templates/run-maintenance.sh.j2
+
+# Ensure cron has a standard PATH
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Target the exact repository path
+REPO_DIR="/home/ansible/actions-runner/_work/IaC"
+LOG_DIR="/home/ansible/logs/ansible-maintenance"
+
+# Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
+cd "$REPO_DIR" || exit 1
+
+# Run the playbook and append output to a user-space log file
+ansible-playbook playbooks/maintenance.yml -i inventory/hosts.ini >> "$LOG_DIR/ansible-maintenance.log" 2>&1

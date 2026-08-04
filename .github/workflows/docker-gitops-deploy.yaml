@@ -77,10 +77,16 @@ jobs:
       - name: Run Ansible GitOps Deployment
         working-directory: ansible
         env:
+          ANSIBLE_CONFIG: ./ansible.cfg
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
           FORCE: ${{ inputs.force_deploy || 'false' }}
           VERBOSE: ${{ inputs.verbose || 'false' }}
         run: |
-          EXTRA_VARS="-e target_env=${{ matrix.target }} -e dry_run=$DRY_RUN -e force_deploy=$FORCE -e verbose=$VERBOSE"
+          EXTRA_VARS="-e target_env=${{ matrix.target }}"
+          EXTRA_VARS="$EXTRA_VARS -e dry_run=$DRY_RUN"
+          EXTRA_VARS="$EXTRA_VARS -e force_deploy=$FORCE"
+          EXTRA_VARS="$EXTRA_VARS -e verbose=$VERBOSE"
+          EXTRA_VARS="$EXTRA_VARS -e skip_git_sync=true"
+          EXTRA_VARS="$EXTRA_VARS -e git_current_commit=${{ github.sha }}"
           echo "Executing for ${{ matrix.target }} with variables: $EXTRA_VARS"
-          ansible-playbook -i inventories/docker.ini playbooks/docker-deploy.yml $EXTRA_VARS
+          ansible-playbook -i inventories/docker.ini docker-deploy.yml $EXTRA_VARS

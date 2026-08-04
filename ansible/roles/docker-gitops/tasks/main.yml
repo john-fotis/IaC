@@ -5,6 +5,36 @@
   ansible.builtin.set_fact:
     compose_profile: "{{ hostvars[inventory_hostname]['compose_profile'] }}"
 
+- name: "Check if tracked environment file exists for {{ compose_profile }}"
+  delegate_to: localhost
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/../docker/.{{ compose_profile }}.env"
+  register: repo_env_file
+
+- name: "Deploy strict environment file (.{{ compose_profile }}.env) to target server"
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../docker/.{{ compose_profile }}.env"
+    dest: "{{ docker_dest_dir }}/.env"
+    mode: "0600"
+  when: repo_env_file.stat.exists
+
+- name: Override user-related variables in .env file
+  ansible.builtin.lineinfile:
+    path: "{{ docker_dest_dir }}/.env"
+    regexp: "^#?\\s*{{ item.key }}\\s*="
+    line: "{{ item.key }}={{ item.value }}"
+    state: present
+    create: yes
+  loop:
+    - key: "PUID"
+      value: "{{ ansible_uid | default('1001') }}"
+    - key: "PGID"
+      value: "{{ ansible_gid | default('1001') }}"
+    - key: "USERDIR"
+      value: "/home/{{ ansible_user | default('ansible') }}"
+    - key: "SECRETSDIR"
+      value: "/home/{{ ansible_user | default('ansible') }}/docker/secrets/{{ compose_profile }}"
+
 - name: Display pre-flight info
   ansible.builtin.debug:
     msg: >-

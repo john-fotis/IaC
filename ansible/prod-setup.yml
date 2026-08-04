@@ -1,6 +1,7 @@
+# Ansible Playbook for PROD Hosts setup
 ---
-- name: Install Docker on DMZ hosts
-  hosts: dmz
+- name: Install Docker on PROD hosts
+  hosts: prod
   gather_facts: true
   become: true
   remote_user: "{{ lookup('env','USER') }}"

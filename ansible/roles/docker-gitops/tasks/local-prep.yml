@@ -5,10 +5,11 @@
   ansible.builtin.include_tasks: pre-deployment.yml
   tags: ["always", "gitops-validate"]
 
-- name: Include Git synchronization tasks
-  ansible.builtin.include_tasks: git-sync.yml
-  tags: ["gitops-sync"]
-  when: not dry_run | default(false) | bool
+- name: Synchronize Git Repository
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/git-sync.yml"
+  when:
+    - not skip_git_sync | default(false) | bool
+    - not dry_run | default(false) | bool
 
 - name: Include dynamic target detection
   ansible.builtin.include_tasks: detect-target-hosts.yml
@@ -72,6 +73,7 @@
             msg: "Secrets cleanup executed on bastion"
           when: verbose | default(false) | bool
 
-        - name: Return git clone to a clean state
-          ansible.builtin.include_tasks: git-cleanup.yml
+        - name: Clean up Git state
+          ansible.builtin.include_tasks: "{{ role_path }}/tasks/git-cleanup.yml"
+          when: not skip_git_sync | default(false) | bool
           run_once: true

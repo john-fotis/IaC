@@ -1,0 +1,32 @@
+---
+# roles/host-maintenance/tasks/bastion-setup.yml
+
+- name: Configure Bastion Automation
+  delegate_to: localhost
+  run_once: true
+  become: false # Run as the local ansible user, no sudo needed
+  block:
+    - name: Ensure local scripts and logs directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "/home/ansible/scripts"
+        - "/home/ansible/logs"
+
+    - name: Deploy maintenance wrapper script from template
+      ansible.builtin.template:
+        src: run-maintenance.sh.j2
+        dest: "/home/ansible/scripts/run-maintenance.sh"
+        mode: "0755"
+
+    - name: Schedule weekly maintenance cron job
+      ansible.builtin.cron:
+        name: "Weekly System Maintenance"
+        minute: "0"
+        hour: "2"
+        weekday: "6"
+        job: "/home/ansible/scripts/run-maintenance.sh"
+        user: ansible
+        state: present

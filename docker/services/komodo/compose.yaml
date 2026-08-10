@@ -22,7 +22,7 @@ services:
       komodo.skip: "true"
 
   core:
-    image: ghcr.io/moghtech/komodo-core:2.2.0
+    image: ghcr.io/moghtech/komodo-core:2.3.1
     container_name: komodo-core
     profiles: ["prod"]
     depends_on:
@@ -65,7 +65,7 @@ services:
       - komodo.skip=true
 
   periphery:
-    image: ghcr.io/moghtech/komodo-periphery:2.2.0
+    image: ghcr.io/moghtech/komodo-periphery:2.3.1
     container_name: komodo-periphery
     profiles: ["prod", "dmz"]
     environment:

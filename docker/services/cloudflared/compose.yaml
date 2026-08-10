@@ -2,7 +2,7 @@
 services:
   cloudflared:
     container_name: cloudflared
-    image: cloudflare/cloudflared:2026.7.2
+    image: cloudflare/cloudflared:2026.7.3
     profiles: ["dmz"]
     user: ${PUID:-1000}:${PGID:-1000}
     environment:

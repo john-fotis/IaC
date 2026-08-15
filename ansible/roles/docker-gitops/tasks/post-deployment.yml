@@ -56,7 +56,11 @@
       ansible.builtin.include_tasks: cleanup.yml
       when:
         - not dry_run | default(false) | bool
-        - hostvars['localhost']['git_repo_changed'] | default(false) | bool or force_deploy | default(false) | bool
+        - >
+          hostvars['localhost']['git_repo_changed'] | default(false) | bool or
+          docker_compose_pull_result.changed | default(false) | bool or
+          docker_compose_up_result.changed | default(false) | bool or
+          force_deploy | default(false) | bool
 
     - name: Import Notification Tasks
       ansible.builtin.include_tasks: notify.yml

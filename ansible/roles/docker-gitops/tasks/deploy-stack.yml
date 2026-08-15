@@ -248,11 +248,15 @@
       ansible.builtin.command:
         cmd: docker compose up -d --remove-orphans
         chdir: "{{ docker_dest_dir }}"
-      register: docker_compose_result
-      changed_when: "'Starting' in docker_compose_result.stdout or 'Creating' in docker_compose_result.stdout"
+      register: docker_compose_up_result
+      changed_when: >
+        'Created' in docker_compose_up_result.stdout or 'Created' in docker_compose_up_result.stderr or
+        'Recreated' in docker_compose_up_result.stdout or 'Recreated' in docker_compose_up_result.stderr or
+        'Started' in docker_compose_up_result.stdout or 'Started' in docker_compose_up_result.stderr
+
     - name: Display Docker Compose output
       ansible.builtin.debug:
-        var: docker_compose_result.stdout_lines
+        var: docker_compose_up_result.stdout_lines
       when:
-        - docker_compose_result is defined
+        - docker_compose_up_result is defined
         - verbose | default(false) | bool

@@ -7,25 +7,28 @@ lans:
 vlans:
   - name: PROD
     tag: 10
-    description: Production VLAN - Trusted services
+    description: Production VLAN - Trusted services & Core applications
   - name: DMZ
     tag: 20
     description: DMZ VLAN - Public services
   - name: IOT
     tag: 30
-    description: IoT VLAN
+    description: IoT VLAN - Internet of Things devices and services
   - name: TEST
     tag: 40
-    description: Test VLAN
+    description: Test VLAN - Experimental and development services
   - name: IPCAM
     tag: 50
-    description: IP Camera VLAN
+    description: IP Camera VLAN - IP Cameras and NVR
   - name: USER
     tag: 60
-    description: User devices
+    description: User VLAN - User personal devices
   - name: GUEST
     tag: 70
-    description: Guest devices
+    description: Guest VLAN - Guest personal devices
+  - name: MGMT
+    tag: 99
+    description: Management VLAN - Network infrastructure and management devices
 
 docker:
   - name: Traefik-PROD

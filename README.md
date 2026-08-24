@@ -1,5 +1,3 @@
-# IaC
-
 # ☁️ Cloud-Native Homelab & Infrastructure as Code
 
 [![Status: Active](https://img.shields.io/badge/Status-Active-success.svg)](#)

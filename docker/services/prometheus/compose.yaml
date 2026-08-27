@@ -2,7 +2,7 @@
 name: prometheus
 services:
   prometheus:
-    image: prom/prometheus:v3.13.2
+    image: prom/prometheus:v3.14.0
     container_name: prometheus
     profiles: ["prod"]
     security_opt:
@@ -23,7 +23,7 @@ services:
       - traefik.http.routers.prometheus.middlewares=chain-authentik@file
 
   alertmanager:
-    image: prom/alertmanager:v0.33.1
+    image: prom/alertmanager:v0.34.0
     container_name: alertmanager
     profiles: ["prod"]
     security_opt:

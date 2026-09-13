@@ -21,7 +21,7 @@ sops_binary: "/usr/local/bin/sops"
 dry_run: false
 verbose: false
 force_deploy: false
-check_mode_enabled: "{{ ansible_check_mode | default(false) }}"
+skip_env_sync: false
 
 # GitOps daemon settings
 continuous_mode: false

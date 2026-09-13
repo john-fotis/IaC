@@ -34,6 +34,7 @@
       ansible.builtin.import_tasks: sops-decrypt.yml
       when:
         - not dry_run | default(false) | bool
+        - not skip_env_sync | default(false) | bool
         - use_sops | bool
         - sops_version is defined and sops_version.rc == 0
 
@@ -62,11 +63,11 @@
             recurse: true
           register: files_to_remove
 
-        - name: Remove decrypted files from local runner directory
-          ansible.builtin.file:
-            path: "{{ item.path }}"
-            state: absent
-          loop: "{{ files_to_remove.files }}"
+        # - name: Remove decrypted files from local runner directory
+        #   ansible.builtin.file:
+        #     path: "{{ item.path }}"
+        #     state: absent
+        #   loop: "{{ files_to_remove.files }}"
 
         - name: Ensure secrets are scrubbed regardless of deployment status
           ansible.builtin.debug:

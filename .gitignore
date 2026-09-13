@@ -180,6 +180,12 @@ docker/secrets/prod/mailrise_discord_webhook_id
 !docker/secrets/prod/mailrise_discord_webhook_id.sops
 docker/secrets/prod/mailrise_discord_webhook_token
 !docker/secrets/prod/mailrise_discord_webhook_token.sops
+docker/secrets/prod/open_webui_oauth_client_id
+!docker/secrets/prod/open_webui_oauth_client_id.sops
+docker/secrets/prod/open_webui_oauth_client_secret
+!docker/secrets/prod/open_webui_oauth_client_secret.sops
+docker/secrets/prod/open_webui_secret_key
+!docker/secrets/prod/open_webui_secret_key.sops
 docker/secrets/prod/speedtest_tracker_app_key
 !docker/secrets/prod/speedtest_tracker_app_key.sops
 docker/secrets/prod/vaultwarden_zip_password

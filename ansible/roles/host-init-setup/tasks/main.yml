@@ -2,8 +2,8 @@
 - import_tasks: users.yml
   tags: bootstrap
 
-- import_tasks: misc.yml
+- import_tasks: shell.yml
   tags: post-install
 
-- import_tasks: shell.yml
+- import_tasks: misc.yml
   tags: post-install

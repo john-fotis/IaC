@@ -20,7 +20,12 @@
         user: "{{ sudo_user }}"
         state: present
         manage_dir: yes
-        key: "{{ lookup('file', ssh_private_key_file + '.pub') }}"
+        key: >-
+          {{ lookup(
+            'file',
+            lookup('env', 'HOME') ~ '/.ssh/' ~
+            (ssh_private_key_file | basename) ~ '.pub'
+          ) }}
 
     - name: Deploy SSH config
       ansible.builtin.template:
@@ -34,7 +39,7 @@
   when: sudo_user_exists.changed
 
 - name: Create ansible user and configure passwordless sudo and SSH key
-  when: run_host_ansible_bootstrap | bool
+  when: run_host_ansible_bootstrap | bool | default(false)
   block:
     - name: Create ansible if not exists
       ansible.builtin.user:
@@ -56,4 +61,9 @@
         user: ansible
         state: present
         manage_dir: yes
-        key: "{{ lookup('file', ansible_ssh_private_key_file + '.pub') }}"
+        key: >-
+          {{ lookup(
+            'file',
+            lookup('env', 'HOME') ~ '/.ssh/' ~
+            (ansible_ssh_private_key_file | basename) ~ '.pub'
+          ) }}

@@ -4,7 +4,11 @@
   hosts: lxcs
   gather_facts: false
   vars:
-    ssh_opts: "-i {{ ssh_private_key_file }} -o BatchMode=yes -o ConnectTimeout=3 -q"
+    ssh_opts: >-
+      -i {{ lookup('env', 'HOME') }}/.ssh/{{ ssh_private_key_file | basename }}
+      -o BatchMode=yes
+      -o ConnectTimeout=3
+      -q
   tasks:
     - name: SSH check from localhost for each host
       ansible.builtin.command: >

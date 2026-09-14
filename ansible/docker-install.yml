@@ -1,0 +1,17 @@
+# Ansible Playbook for PROD Hosts setup
+---
+- name: Install Docker
+  hosts: docker
+  gather_facts: true
+  become: true
+  remote_user: "{{ lookup('env','USER') }}"
+  tasks:
+    - name: Update system packages
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+    - name: Execute Docker install role
+      ansible.builtin.include_role:
+        name: docker-install

@@ -1,0 +1,28 @@
+# Ansible Playbook for LXC Maintenance
+---
+- name: Pre-flight reachability check
+  hosts: lxcs
+  gather_facts: false
+  tasks:
+    - name: Ping hosts to check reachability
+      ansible.builtin.ping:
+      ignore_unreachable: true
+      register: ping_result
+
+    - name: Add responding hosts to 'online_nodes' group
+      ansible.builtin.group_by:
+        key: online_nodes
+      when: ping_result is succeeded and not ping_result.get('unreachable', false)
+
+    - name: Show online nodes
+      delegate_to: localhost
+      run_once: true
+      ansible.builtin.debug:
+        msg: "Online nodes: {{ groups['online_nodes'] | default([]) | join(', ') }}"
+      when: verbose | default(false) | bool
+
+- name: Weekly System Maintenance
+  hosts: online_nodes
+  gather_facts: false
+  roles:
+    - host-maintenance

@@ -1,10 +1,14 @@
 ---
 # roles/host-maintenance/tasks/update.yml
 
-- name: Update apt cache and run dist-upgrade
+- name: Update apt cache, upgrade, and clean
+  become: true
   ansible.builtin.apt:
     update_cache: true
     upgrade: dist
+    autoclean: true
+    autoremove: true
+    clean: true
     cache_valid_time: 3600
   register: apt_update_result
   retries: 3
@@ -13,5 +17,5 @@
 
 - name: Display update results
   ansible.builtin.debug:
-    msg: "System updated successfully."
+    msg: "System updated and cleaned successfully."
   when: verbose | default(false) | bool

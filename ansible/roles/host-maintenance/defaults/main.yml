@@ -2,4 +2,9 @@
 # roles/host-maintenance/defaults/main.yml
 
 enable_notifications: true
-discord_admin_ping: "<@&admin>"
+discord_admin_ping: "@admin"
+
+# Cron job schedule
+maintenance_cron_minute: "0"
+maintenance_cron_hour: "2"
+maintenance_cron_weekday: "6"

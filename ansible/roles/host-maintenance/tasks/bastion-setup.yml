@@ -4,7 +4,6 @@
 - name: Configure Bastion Automation
   delegate_to: localhost
   run_once: true
-  become: false # Run as the local ansible user, no sudo needed
   block:
     - name: Ensure local scripts and logs directories exist
       ansible.builtin.file:
@@ -24,9 +23,9 @@
     - name: Schedule weekly maintenance cron job
       ansible.builtin.cron:
         name: "Weekly System Maintenance"
-        minute: "0"
-        hour: "2"
-        weekday: "6"
+        minute: "{{ maintenance_cron_minute }} | default(0) }}"
+        hour: "{{ maintenance_cron_hour }} | default(2) }}"
+        weekday: "{{ maintenance_cron_weekday }} | default(6) }}"
         job: "/home/ansible/scripts/run-maintenance.sh"
         user: ansible
         state: present

@@ -7,11 +7,22 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Target the exact repository path
 REPO_DIR="/home/ansible/actions-runner/_work/IaC"
 LOG_DIR="/home/ansible/logs/ansible-maintenance"
+ANSIBLE_DIR="${REPO_DIR}/IaC/ansible"
 
 # Ensure log directory exists
 mkdir -p "$LOG_DIR"
 
+# Rotate and compress the previous logs
+if [ -f "$LOG_DIR/ansible-maintenance.log" ]; then
+  TIMESTAMP=$(date -d "1 week ago" +"%Y-%m-%d_%H-%M-%S")
+  mv "$LOG_DIR/ansible-maintenance.log" "$LOG_DIR/$TIMESTAMP.log"
+  gzip "$LOG_DIR/$TIMESTAMP.log"
+fi
+
+# Delete compressed logs older than 30 days
+find "$LOG_DIR" -name "*.log.gz" -type f -mtime +30 -exec rm -f {} \;
+
 cd "$REPO_DIR" || exit 1
 
-# Run the playbook and append output to a user-space log file
-ansible-playbook playbooks/maintenance.yml -i inventory/hosts.ini >> "$LOG_DIR/ansible-maintenance.log" 2>&1
+# Run the playbook and append output to a fresh log file
+ansible-playbook "$ANSIBLE_DIR/ubuntu-maintenance.yml" -i "$ANSIBLE_DIR/inventories/hosts.ini" --skip-tags "setup" >> "$LOG_DIR/ansible-maintenance.log" 2>&1

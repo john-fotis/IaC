@@ -9,11 +9,3 @@
 - name: Set reboot required fact
   ansible.builtin.set_fact:
     needs_reboot: "{{ reboot_required_file.stat.exists | default(false) }}"
-
-- name: Trigger Discord notification
-  ansible.builtin.include_tasks: notify.yml
-  when:
-    - needs_reboot | bool
-    - enable_notifications | bool
-    - discord_webhook_url is defined
-    - discord_webhook_url != ""

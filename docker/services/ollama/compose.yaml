@@ -1,0 +1,29 @@
+services:
+  ollama:
+    image: ollama/ollama:0.34.0
+    container_name: ollama
+    restart: unless-stopped
+    profiles: ["prod"]
+    networks:
+      - traefik
+    # ports:
+    #   - "$OLLAMA_PORT:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+      - ollama-models:/models
+    # DEVICES-GPU-PLACEHOLDER-DO-NOT-DELETE
+    environment:
+      - OLLAMA_KEEP_ALIVE=1h
+      - OLLAMA_MODELS=/models
+
+volumes:
+  ollama-data:
+    name: ollama-data
+    driver: local
+  ollama-models:
+    name: ollama-models
+    driver: local
+    driver_opts:
+      type: none
+      device: "/mnt/ollama-models"
+      o: bind

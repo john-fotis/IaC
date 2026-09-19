@@ -1,0 +1,54 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:v0.11.3
+    container_name: open-webui
+    restart: unless-stopped
+    profiles: ["prod"]
+    # ports:
+    #   - "$OPENWEBUI_PORT:8080"
+    networks:
+      - traefik
+    volumes:
+      - open-webui:/app/backend/data
+    environment:
+      - WEBUI_URL
+      - OLLAMA_BASE_URL
+      - WEBUI_SECRET_KEY_FILE
+      - USER_AGENT
+      - OAUTH_CLIENT_ID_FILE
+      - OAUTH_CLIENT_SECRET_FILE
+      - OAUTH_PROVIDER_NAME
+      - OPENID_PROVIDER_URL
+      - OPENID_REDIRECT_URI
+      - ENABLE_OAUTH_ROLE_MANAGEMENT
+      - ENABLE_LOGIN_FORM
+      - ENABLE_PASSWORD_AUTH
+      - OAUTH_MERGE_ACCOUNTS_BY_EMAIL
+      - ENABLE_OAUTH_SIGNUP
+      - OAUTH_SCOPES
+      - CORS_ALLOW_ORIGIN
+      - OAUTH_UPDATE_PICTURE_ON_LOGIN
+      - ENABLE_OAUTH_PERSISTENT_CONFIG
+    secrets:
+      - open_webui_secret_key
+      - open_webui_oauth_client_id
+      - open_webui_oauth_client_secret
+    entrypoint: >
+      bash -c "
+      export WEBUI_SECRET_KEY=$$(cat $WEBUI_SECRET_KEY_FILE) &&
+      export OAUTH_CLIENT_ID=$$(cat $OAUTH_CLIENT_ID_FILE) &&
+      export OAUTH_CLIENT_SECRET=$$(cat $OAUTH_CLIENT_SECRET_FILE) &&
+      exec bash start.sh
+      "
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.open-webui.rule=Host(`chat.${FQDN}`)
+      - traefik.http.routers.open-webui.entrypoints=websecure
+      - traefik.http.routers.open-webui.tls=true
+      - traefik.http.routers.open-webui.tls.certresolver=letsencrypt
+      - traefik.http.services.open-webui.loadbalancer.server.port=8080
+
+volumes:
+  open-webui:
+    name: open-webui
+    driver: local

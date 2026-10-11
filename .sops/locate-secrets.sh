@@ -31,6 +31,9 @@ advanced_find docker/secrets -type f
 # All traefik.yaml files under docker/services/traefik
 advanced_find docker/services/traefik -type f -name "traefik.yaml"
 
+# Frigate configuration file
+advanced_find docker/services/frigate -type f -name "config.yaml"
+
 # All inventory files in ansible
 advanced_find ansible/inventories -type f
 

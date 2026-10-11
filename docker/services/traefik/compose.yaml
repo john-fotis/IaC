@@ -10,6 +10,9 @@ services:
       - 465:465/tcp   # SMTP over SSL
       - 8090:8090/tcp # Beszel Agent TCP
       - 8120:8120/tcp # Komodo Periphery TCP
+      - 8554:8554/tcp # Frigate RTSP TCP
+      - 8555:8555/tcp # Frigate WebRTC TCP
+      - 8555:8555/udp # Frigate WebRTC UDP
       - 9001:9001/tcp # Portainer Agent TCP
       - 9108:9108/tcp # Graphite Exporter HTTP
       - 9109:9109/tcp # Graphite Exporter TCP

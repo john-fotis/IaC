@@ -1,0 +1,27 @@
+---
+tcp:
+  routers:
+    frigate-webrtc:
+      entryPoints:
+        - frigate-tcp
+      rule: "HostSNI(`*`)"
+      service: frigate-webrtc
+      middlewares:
+        - private-ips-tcp@file
+  services:
+    frigate-webrtc:
+      loadBalancer:
+        servers:
+          - address: frigate:8555
+
+udp:
+  routers:
+    frigate-webrtc:
+      entryPoints:
+        - frigate-udp
+      service: frigate-webrtc
+  services:
+    frigate-webrtc:
+      loadBalancer:
+        servers:
+          - address: frigate:8555

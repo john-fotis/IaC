@@ -1,0 +1,15 @@
+---
+tcp:
+  routers:
+    frigate-rtsp:
+      entryPoints:
+        - frigate-rtsp
+      rule: "HostSNI(`*`)"
+      service: frigate-rtsp
+      middlewares:
+        - private-ips-tcp@file
+  services:
+    frigate-rtsp:
+      loadBalancer:
+        servers:
+          - address: frigate:8554

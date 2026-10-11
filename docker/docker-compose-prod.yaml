@@ -98,3 +98,5 @@ include:
   # MISC
   - services/speedtest-tracker/compose.yaml
   - services/whoami/compose.yaml
+  # NVR
+  - services/frigate/compose.yaml

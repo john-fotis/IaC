@@ -1,0 +1,58 @@
+services:
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:0.18.0
+    profiles: ["prod"]
+    shm_size: "192mb"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      - FRIGATE_WEBRTC_IP=${SERVER_IP:?"Set SERVER_IP environment variable."}
+      - FRIGATE_PROXY_CIDR=${DOCKER_TRAEFIK_CIDR:?"Set DOCKER_TRAEFIK_CIDR environment variable."}
+      - FRIGATE_RTSP_USER
+      - FRIGATE_RTSP_PASSWORD
+      - FRIGATE_GO2RTC_RTSP_USER
+      - FRIGATE_GO2RTC_RTSP_PASSWORD
+      - FRIGATE_TAPO_PASSWORD
+      - LIBVA_DRIVER_NAME
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    networks:
+      - traefik
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - frigate-config:/config:rw
+      - ./config/config.yaml:/config/config.yaml:rw
+      - frigate-footage:/media/frigate:rw
+      - frigate-cache:/tmp/cache:rw
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frigate.entrypoints=websecure
+      - traefik.http.routers.frigate.rule=Host(`frigate.${FQDN}`)
+      - traefik.http.routers.frigate.tls=true
+      - traefik.http.routers.frigate.service=frigate
+      - traefik.http.services.frigate.loadbalancer.server.port=5000
+      - traefik.http.routers.frigate.middlewares=chain-authentik@file
+
+volumes:
+  frigate-cache:
+    name: frigate-cache
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=1000000000
+  frigate-config:
+    name: frigate-config
+    driver: local
+    driver_opts:
+      type: none
+      device: "/mnt/frigate/config"
+      o: bind
+  frigate-footage:
+    name: frigate-footage
+    driver: local
+    driver_opts:
+      type: none
+      device: "/mnt/frigate/footage"
+      o: bind

@@ -22,7 +22,7 @@ services:
       - traefik.http.routers.vaultwarden.middlewares=chain-no-auth@file
 
   vw-backup:
-    image: ttionya/vaultwarden-backup:1.27.1
+    image: ttionya/vaultwarden-backup:1.27.2
     container_name: vw-backup
     profiles: ["prod"]
     environment:

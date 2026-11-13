@@ -128,6 +128,8 @@ docker/secrets/dmz/oauth_secrets
 !docker/secrets/dmz/oauth_secrets.sops
 docker/secrets/dmz/traefik_forward_oauth
 !docker/secrets/dmz/traefik_forward_oauth.sops
+docker/secrets/prod/actual_budget_client_secret
+!docker/secrets/prod/actual_budget_client_secret.sops
 docker/secrets/prod/apprise_discord_webhook_id
 !docker/secrets/prod/apprise_discord_webhook_id.sops
 docker/secrets/prod/apprise_discord_webhook_token
@@ -188,6 +190,16 @@ docker/secrets/prod/open_webui_secret_key
 !docker/secrets/prod/open_webui_secret_key.sops
 docker/secrets/prod/speedtest_tracker_app_key
 !docker/secrets/prod/speedtest_tracker_app_key.sops
+docker/secrets/prod/sure_oidc_client_secret
+!docker/secrets/prod/sure_oidc_client_secret.sops
+docker/secrets/prod/sure_openai_access_token
+!docker/secrets/prod/sure_openai_access_token.sops
+docker/secrets/prod/sure_postgres_password
+!docker/secrets/prod/sure_postgres_password.sops
+docker/secrets/prod/sure_secret_key_base
+!docker/secrets/prod/sure_secret_key_base.sops
+docker/secrets/prod/sure_smtp_password
+!docker/secrets/prod/sure_smtp_password.sops
 docker/secrets/prod/vaultwarden_zip_password
 !docker/secrets/prod/vaultwarden_zip_password.sops
 docker/services/ddclient/config/ddclient.conf

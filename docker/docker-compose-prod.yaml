@@ -48,6 +48,16 @@ secrets:
     file: ./secrets/crowdsec_maxmind_license_key
   speedtest_tracker_app_key:
     file: ./secrets/speedtest_tracker_app_key
+  sure_secret_key_base:
+    file: ./secrets/sure_secret_key_base
+  sure_smtp_password:
+    file: ./secrets/sure_smtp_password
+  sure_postgres_password:
+    file: ./secrets/sure_postgres_password
+  sure_oidc_client_secret:
+    file: ./secrets/sure_oidc_client_secret
+  sure_openai_access_token:
+    file: ./secrets/sure_openai_access_token
   gmail_smtp_username:
     file: ./secrets/gmail_smtp_username
   gmail_smtp_password:
@@ -97,6 +107,7 @@ include:
   - services/graphite-exporter/compose.yaml
   # MISC
   - services/speedtest-tracker/compose.yaml
+  - services/sure/compose.yaml
   - services/whoami/compose.yaml
   # NVR
   - services/frigate/compose.yaml

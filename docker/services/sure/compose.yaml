@@ -1,0 +1,157 @@
+---
+x-sure-env: &sure-env
+  TZ: ${TZ:-UTC}
+  RAILS_ENV: production
+  SELF_HOSTED: 'true'
+  SECRET_KEY_BASE_FILE: ${SURE_SECRET_KEY_BASE_FILE}
+  DB_HOST: sure-db
+  DB_PORT: '5432'
+  POSTGRES_USER: ${SURE_POSTGRES_USER}
+  POSTGRES_PASSWORD_FILE: ${SURE_POSTGRES_PASSWORD_FILE}
+  POSTGRES_DB: ${SURE_POSTGRES_DB}
+  REDIS_URL: redis://sure-redis:6379/1
+  SMTP_ADDRESS: ${SURE_SMTP_ADDRESS}
+  SMTP_PORT: ${SURE_SMTP_PORT}
+  SMTP_USERNAME: ${SURE_SMTP_USERNAME}
+  SMTP_PASSWORD_FILE: ${SURE_SMTP_PASSWORD_FILE}
+  SMTP_TLS_ENABLED: ${SURE_SMTP_TLS_ENABLED}
+  EMAIL_SENDER: ${SURE_EMAIL_SENDER}
+  OPENAI_ACCESS_TOKEN_FILE: ${SURE_OPENAI_ACCESS_TOKEN_FILE}
+
+x-sure-app: &sure-app
+  image: ghcr.io/we-promise/sure:0.7.6
+  profiles: ['prod']
+  restart: unless-stopped
+  stop_grace_period: 30s
+  entrypoint:
+    - /bin/sh
+    - -c
+    - |
+      for v in SECRET_KEY_BASE POSTGRES_PASSWORD OIDC_CLIENT_SECRET SMTP_PASSWORD OPENAI_ACCESS_TOKEN; do
+        f="$$(printenv "$${v}_FILE")"
+        [ -n "$$f" ] && export "$$v=$$(cat "$$f")"
+      done
+      exec /rails/bin/docker-entrypoint "$$@"
+    - sure
+  depends_on:
+    sure-db:
+      condition: service_healthy
+    sure-redis:
+      condition: service_healthy
+  volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - sure-app-storage:/rails/storage:rw
+
+services:
+  sure:
+    <<: *sure-app
+    container_name: sure
+    command: ['./bin/rails', 'server']
+    environment:
+      <<: *sure-env
+      RAILS_ASSUME_SSL: 'true'
+      RAILS_FORCE_SSL: 'false'
+      APP_DOMAIN: https://sure.${FQDN}
+      DISABLE_LOCAL_LOGIN: 'true'
+      ONBOARDING_STATE: 'closed'
+      AUTH_LOCAL_LOGIN_ENABLED: 'false'
+      AUTH_LOCAL_ADMIN_OVERRIDE_ENABLED: 'false'
+      OIDC_ISSUER: https://authentik.${FQDN}/application/o/sure/
+      OIDC_CLIENT_ID: ${SURE_OIDC_CLIENT_ID}
+      OIDC_CLIENT_SECRET_FILE: ${SURE_OIDC_CLIENT_SECRET_FILE}
+      OIDC_REDIRECT_URI: https://sure.${FQDN}/auth/openid_connect/callback
+      OIDC_BUTTON_LABEL: Sign in with Authentik
+      OIDC_AUTO_CREATE_ACCOUNT: 'true'
+    networks:
+      - traefik
+      - sure-net
+    secrets:
+      - sure_oidc_client_secret
+      - sure_openai_access_token
+      - sure_postgres_password
+      - sure_secret_key_base
+      - sure_smtp_password
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.sure.entrypoints=websecure
+      - traefik.http.routers.sure.rule=Host(`sure.${FQDN}`)
+      - traefik.http.routers.sure.tls=true
+      - traefik.http.routers.sure.service=sure
+      - traefik.http.services.sure.loadbalancer.server.port=3000
+      - traefik.http.routers.sure.middlewares=chain-no-auth@file
+
+  sure-worker:
+    <<: *sure-app
+    container_name: sure-worker
+    command: ['bundle', 'exec', 'sidekiq']
+    environment:
+      <<: *sure-env
+    networks:
+      - traefik
+      - sure-net
+    secrets:
+      - sure_openai_access_token
+      - sure_postgres_password
+      - sure_secret_key_base
+      - sure_smtp_password
+
+  sure-db:
+    container_name: sure-db
+    image: postgres:18-alpine
+    profiles: ['prod']
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      TZ: ${TZ:-UTC}
+      POSTGRES_USER: ${SURE_POSTGRES_USER}
+      POSTGRES_PASSWORD_FILE: ${SURE_POSTGRES_PASSWORD_FILE}
+      POSTGRES_DB: ${SURE_POSTGRES_DB}
+    networks:
+      - sure-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - sure-db-data:/var/lib/postgresql:rw
+    secrets:
+      - sure_postgres_password
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${SURE_POSTGRES_USER} -d ${SURE_POSTGRES_DB}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sure-redis:
+    container_name: sure-redis
+    image: redis:8.4.1-alpine3.22
+    profiles: ['prod']
+    restart: unless-stopped
+    networks:
+      - sure-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - sure-redis-data:/data:rw
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  sure-net:
+    name: sure-net
+    driver: bridge
+
+volumes:
+  sure-app-storage:
+    name: sure-app-storage
+    driver: local
+  sure-db-data:
+    name: sure-db-data
+    driver: local
+  sure-redis-data:
+    name: sure-redis-data
+    driver: local

@@ -16,6 +16,10 @@ networks:
         - subnet: 192.168.81.0/24
 
 secrets:
+  actual_budget_client_id:
+    file: ./secrets/actual_budget_client_id
+  actual_budget_client_secret:
+    file: ./secrets/actual_budget_client_secret
   apprise_discord_webhook_id:
     file: ./secrets/apprise_discord_webhook_id
   apprise_discord_webhook_token:
@@ -106,6 +110,7 @@ include:
   - services/grafana/compose.yaml
   - services/graphite-exporter/compose.yaml
   # MISC
+  - services/actual-budget/compose.yaml
   - services/speedtest-tracker/compose.yaml
   - services/sure/compose.yaml
   - services/whoami/compose.yaml

@@ -1,0 +1,38 @@
+services:
+  actual-budget:
+    container_name: actual-budget
+    image: actualbudget/actual-server:26.11.0-alpine
+    profiles: ["prod"]
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-UTC}
+      - ACTUAL_USER_CREATION_MODE=login
+      - ACTUAL_LOGIN_METHOD=openid
+      - ACTUAL_OPENID_DISCOVERY_URL=https://authentik.${FQDN}/application/o/actual-budget/
+      - ACTUAL_OPENID_CLIENT_ID=${ACTUAL_OPENID_CLIENT_ID}
+      - ACTUAL_OPENID_CLIENT_SECRET_FILE=${ACTUAL_OPENID_CLIENT_SECRET_FILE}
+      - ACTUAL_OPENID_SERVER_HOSTNAME=https://actual-budget.${FQDN}
+    networks:
+      - traefik
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - actual-budget-data:/data:rw
+    secrets:
+      - actual_budget_client_id
+      - actual_budget_client_secret
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.actual-budget.entrypoints=websecure
+      - traefik.http.routers.actual-budget.rule=Host(`actual-budget.${FQDN}`)
+      - traefik.http.routers.actual-budget.tls=true
+      - traefik.http.routers.actual-budget.service=actual-budget
+      - traefik.http.services.actual-budget.loadbalancer.server.port=5006
+      - traefik.http.routers.actual-budget.middlewares=chain-no-auth@file
+
+volumes:
+  actual-budget-data:
+    name: actual-budget-data
+    driver: local
